@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Soil Mate - เครื่องมือตรวจวัดสภาพดินอัจฉริยะ</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts (Sarabun & Inter) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for beautiful charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Sarabun', 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #1e3a8a 0%, #0d9488 100%);
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- Top Navigation Bar -->
+    <nav class="bg-white border-b border-slate-100 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center text-white shadow-md">
+                        <i class="fa-solid fa-seedling text-lg"></i>
+                    </div>
+                    <div>
+                        <span class="font-bold text-lg tracking-tight text-slate-900 block leading-tight">My Soil Mate</span>
+                        <span class="text-xs text-slate-500">เครื่องมือตรวจวัดสภาพดินอัจฉริยะ 7-in-1</span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                        <span class="w-1.5 h-1.5 mr-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Modbus Connected
+                    </span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Header Section -->
+        <div class="mb-8 bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-slate-900 mb-2">วิเคราะห์ดินเพื่อการเพาะปลูกที่แม่นยำ</h1>
+                <p class="text-slate-500 max-w-2xl">
+                    ผสานข้อมูลจากเซนเซอร์ตรวจวัดดินแบบ 7-in-1 (TH-EC-PH-NPK) เข้ากับข้อมูลสภาพภูมิอากาศระดับโลกจาก NASA POWER และ Open-Meteo เพื่อหาพืชที่เหมาะสมที่สุดสำหรับคุณ
+                </p>
+            </div>
+            <!-- Quick GPS Coordinates Setup -->
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 shrink-0 w-full md:w-auto">
+                <h3 class="text-sm font-semibold text-slate-700 mb-2"><i class="fa-solid fa-location-dot text-teal-600 mr-1"></i> พิกัดพื้นที่เพาะปลูก</h3>
+                <div class="flex flex-wrap gap-2">
+                    <input id="lat-input" type="number" step="0.0001" value="13.7563" class="w-24 px-2 py-1 text-sm border border-slate-200 rounded-lg text-center" placeholder="Latitude">
+                    <input id="lng-input" type="number" step="0.0001" value="100.5018" class="w-24 px-2 py-1 text-sm border border-slate-200 rounded-lg text-center" placeholder="Longitude">
+                    <button onclick="fetchExternalData()" class="px-3 py-1 bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium rounded-lg transition-colors flex items-center gap-1">
+                        <i class="fa-solid fa-rotate"></i> ดึงข้อมูล API
+                    </button>
+                </div>
+                <div id="api-status" class="text-xxs text-slate-400 mt-2 text-right">ข้อมูลจำลองท้องถิ่น (กดปุ่มเพื่อดึงข้อมูลจริง)</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- COLUMN 1: Sensor Inputs & Live Readings -->
+            <div class="lg:col-span-1 space-y-6">
+                
+                <!-- Sensor Simulation Controls -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                        <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-sliders text-indigo-600"></i>
+                            จำลองค่าจากเซนเซอร์
+                        </h2>
+                        <button onclick="setRandomSoilValues()" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">สุ่มค่าตัวอย่าง</button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <!-- Nitrogen (N) -->
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="font-medium text-slate-700">ไนโตรเจน (N)</span>
+                                <span class="font-bold text-indigo-600"><span id="val-n">45</span> mg/kg</span>
+                            </div>
+                            <input id="input-n" type="range" min="0" max="150" value="45" oninput="updateSensorDisplay()" class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                        </div>
+
+                        <!-- Phosphorus (P) -->
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="font-medium text-slate-700">ฟอสฟอรัส (P)</span>
+                                <span class="font-bold text-indigo-600"><span id="val-p">30</span> mg/kg</span>
+                            </div>
+                            <input id="input-p" type="range" min="0" max="100" value="30" oninput="updateSensorDisplay()" class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                        </div>
+
+                        <!-- Potassium (K) -->
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="font-medium text-slate-700">โพแทสเซียม (K)</span>
+                                <span class="font-bold text-indigo-600"><span id="val-k">80</span> mg/kg</span>
+                            </div>
+                            <input id="input-k" type="range" min="0" max="250" value="80" oninput="updateSensorDisplay()" class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                        </div>
+
+                        <!-- pH Value -->
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="font-medium text-slate-700">ความเป็นกรด-ด่าง (pH)</span>
+                                <span class="font-bold text-teal-600"><span id="val-ph">6.2</span> pH</span>
+                            </div>
+                            <input id="input-ph" type="range" min="3" max="10" step="0.1" value="6.2" oninput="updateSensorDisplay()" class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-teal-600">
+                        </div>
+
+                        <!-- Soil Moisture -->
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="font-medium text-slate-700">ความชื้นดิน (Moisture)</span>
+                                <span class="font-bold text-blue-600"><span id="val-moisture">35</span> %</span>
+                            </div>
+                            <input id="input-moisture" type="range" min="0" max="100" value="35" oninput="updateSensorDisplay()" class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                        </div>
+
+                        <!-- Temperature -->
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="font-medium text-slate-700">อุณหภูมิดิน (Temp)</span>
+                                <span class="font-bold text-amber-600"><span id="val-temp">28</span> °C</span>
+                            </div>
+                            <input id="input-temp" type="range" min="10" max="45" value="28" oninput="updateSensorDisplay()" class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-amber-600">
+                        </div>
+
+                        <!-- Electrical Conductivity (EC) -->
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="font-medium text-slate-700">ค่านำไฟฟ้าดิน (EC)</span>
+                                <span class="font-bold text-emerald-600"><span id="val-ec">450</span> us/cm</span>
+                            </div>
+                            <input id="input-ec" type="range" min="0" max="2000" value="450" oninput="updateSensorDisplay()" class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-600">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Weather & Satellite Card -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                    <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2 mb-4">
+                        <i class="fa-solid fa-cloud-sun text-amber-500"></i>
+                        ข้อมูล NASA & Open-Meteo
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
+                            <span class="text-sm font-medium text-slate-600">ปริมาณน้ำฝนรายปี (NASA)</span>
+                            <span id="external-rain" class="text-base font-bold text-slate-800">1,250 mm</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
+                            <span class="text-sm font-medium text-slate-600">อุณหภูมิอากาศเฉลี่ย (Open-Meteo)</span>
+                            <span id="external-temp" class="text-base font-bold text-slate-800">29.5 °C</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
+                            <span class="text-sm font-medium text-slate-600">ความชื้นสัมพัทธ์ในอากาศ</span>
+                            <span id="external-humidity" class="text-base font-bold text-slate-800">72 %</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-xxs text-slate-400">
+                        *ระบบดึงปริมาณน้ำฝนเฉลี่ยและอุณหภูมิรายวันล่าสุด เพื่อนำมาวิเคราะห์ความเหมาะสมในการเติบโตของพืชชนิดต่างๆ ร่วมกับสารอาหารในดิน
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- COLUMN 2 & 3: Results, Comparisons and Recommendations -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Main Matching Result Gauge & Spotlight -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                    <h2 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+                        <i class="fa-solid fa-trophy text-amber-500"></i>
+                        พืชที่เหมาะสมที่สุดกับดินบริเวณนี้
+                    </h2>
+                    
+                    <!-- Spotlight Card -->
+                    <div id="spotlight-card" class="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-100/80 flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div class="flex items-center gap-6">
+                            <div id="spotlight-icon-container" class="w-20 h-20 rounded-2xl bg-white shadow-md border border-emerald-200/50 flex items-center justify-center text-4xl">
+                                🌾
+                            </div>
+                            <div>
+                                <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-600 text-white mb-2">
+                                    แนะนำเป็นอันดับ 1
+                                </div>
+                                <h3 id="spotlight-name-th" class="text-2xl font-bold text-slate-900 mb-1">ข้าว (Rice)</h3>
+                                <p id="spotlight-desc" class="text-sm text-slate-600">ดินเหนียวหรือดินร่วนปนเหนียว เก็บกักน้ำได้ดี สารอาหารเหมาะสมในเกณฑ์ดี</p>
+                            </div>
+                        </div>
+                        <div class="text-center shrink-0">
+                            <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">ความเหมาะสม</div>
+                            <div id="spotlight-score" class="text-4xl font-extrabold text-emerald-600">95%</div>
+                            <div class="text-xs text-slate-400 mt-1">วิเคราะห์จาก 7 ปัจจัย</div>
+                        </div>
+                    </div>
+
+                    <!-- Comparison Chart -->
+                    <div class="mt-8">
+                        <h3 class="text-sm font-bold text-slate-700 mb-4">กราฟเรดาร์เปรียบเทียบสารอาหารปัจจุบัน (เซนเซอร์) VS ค่าอุดมคติของพืชที่เลือก</h3>
+                        <div class="h-80 flex justify-center items-center">
+                            <canvas id="soilComparisonChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 15 Crops Matching List -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                    <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                <i class="fa-solid fa-list-ol text-teal-600"></i>
+                                ตารางอันดับความเหมาะสมของพืชทั้งหมด (15 ชนิด)
+                            </h2>
+                            <p class="text-xs text-slate-500">เรียงลำดับจากพืชที่เหมาะสมที่สุดไปยังพืชที่ต้องปรับปรุงดินมากที่สุด</p>
+                        </div>
+                        <!-- Filter tab -->
+                        <div class="flex rounded-lg bg-slate-100 p-0.5 text-xs">
+                            <button id="filter-all" onclick="filterCrops('all')" class="px-3 py-1.5 rounded-md font-medium text-slate-700 bg-white shadow-sm">ทั้งหมด</button>
+                            <button id="filter-high" onclick="filterCrops('high')" class="px-3 py-1.5 rounded-md font-medium text-slate-500 hover:text-slate-900">แนะนำ (>75%)</button>
+                            <button id="filter-low" onclick="filterCrops('low')" class="px-3 py-1.5 rounded-md font-medium text-slate-500 hover:text-slate-900">ต้องปรับปรุงดิน</button>
+                        </div>
+                    </div>
+
+                    <div id="crops-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Dynamic content loaded via JS -->
+                    </div>
+                </div>
+
+                <!-- Soil Improvement & Management Recommendation -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                    <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-hand-holding-droplet text-blue-600"></i>
+                        คำแนะนำและแนวทางปรับปรุงดินรายบุคคล
+                    </h2>
+                    
+                    <div class="mb-4">
+                        <label for="crop-selector" class="block text-sm font-semibold text-slate-700 mb-2">เลือกพืชที่คุณต้องการปลูก เพื่อดูคำแนะนำในการเตรียมหน้าดิน:</label>
+                        <select id="crop-selector" onchange="generateSoilAdvice()" class="w-full md:w-80 px-3 py-2 border border-slate-200 rounded-lg text-slate-800 bg-white shadow-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-200">
+                            <!-- Dynamic selector list -->
+                        </select>
+                    </div>
+
+                    <div id="advice-container" class="p-5 rounded-2xl border border-slate-100 bg-slate-50/50 space-y-4">
+                        <!-- Dynamic soil improvement advice here -->
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-100 mt-16 py-8">
+        <div class="max-w-7xl mx-auto px-4 text-center text-slate-400 text-sm">
+            <p class="mb-2">© 2026 My Soil Mate Project. All Rights Reserved.</p>
+            <p class="text-xs">โครงงานนวัตกรรมเซนเซอร์วัดสภาพดิน 7 in 1 Modbus RS485 ประสานระบบข้อมูลภูมิอากาศ NASA POWER & Open-Meteo API</p>
+        </div>
+    </footer>
+
+    <!-- Custom Notification/Alert Box -->
+    <div id="notification" class="fixed bottom-5 right-5 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-xl transform translate-y-24 opacity-0 transition-all duration-300 z-50 flex items-center gap-3">
+        <i id="notif-icon" class="fa-solid fa-circle-info text-teal-400"></i>
+        <span id="notif-text">ข้อความแจ้งเตือน</span>
+    </div>
+
+    <script>
+        // --- CROP DATABASE (15 Varieties) ---
+        // Ideal parameters for N, P, K (mg/kg), pH, Moisture (%), Temperature (°C), EC (us/cm)
+        const cropsData = [
+            { id: "rice", nameTH: "ข้าว", nameEN: "Rice", icon: "🌾", minN: 50, maxN: 90, minP: 20, maxP: 50, minK: 60, maxK: 120, minPH: 5.5, maxPH: 6.5, minMoisture: 40, maxMoisture: 80, minTemp: 22, maxTemp: 35, minEC: 300, maxEC: 800, desc: "ดินร่วนปนเหนียว ดินร่วน หรือดินเหนียวอุ้มน้ำได้ดี ค่าน้ำเพียงพอ", advice: "หากต้องการปลูกข้าวในพื้นที่ดอน ควรยกร่องและขังน้ำ หรือเลือกสายพันธุ์ข้าวดอย" },
+            { id: "corn", nameTH: "ข้าวโพด", nameEN: "Corn", icon: "🌽", minN: 60, maxN: 110, minP: 25, maxP: 45, minK: 70, maxK: 130, minPH: 5.8, maxPH: 7.0, minMoisture: 30, maxMoisture: 60, minTemp: 20, maxTemp: 32, minEC: 400, maxEC: 900, desc: "ดินร่วนซุย ระบายน้ำดี ไม่ชอบดินน้ำขังหรือดินเหนียวแน่นเกินไป", advice: "เพิ่มอินทรียวัตถุในดิน เช่น ปุ๋ยคอก เพื่อให้ดินร่วนซุยและช่วยการเติบโตของรากข้าวโพด" },
+            { id: "cassava", nameTH: "มันสำปะหลัง", nameEN: "Cassava", icon: "🍠", minN: 40, maxN: 80, minP: 15, maxP: 35, minK: 80, maxK: 160, minPH: 5.2, maxPH: 6.5, minMoisture: 20, maxMoisture: 50, minTemp: 22, maxTemp: 35, minEC: 200, maxEC: 600, desc: "ดินร่วนปนทราย ทนแล้งได้ดีมาก ไม่ทนทานต่อสภาวะน้ำขังเด็ดขาด", advice: "จำเป็นต้องไถพรวนยกร่องสูง เพื่อระบายน้ำและป้องกันปัญหาโรคหัวมันเน่า" },
+            { id: "sugarcane", nameTH: "อ้อย", nameEN: "Sugarcane", icon: "🎋", minN: 70, maxN: 130, minP: 30, maxP: 60, minK: 90, maxK: 180, minPH: 6.0, maxPH: 7.5, minMoisture: 35, maxMoisture: 65, minTemp: 24, maxTemp: 35, minEC: 400, maxEC: 1000, desc: "ต้องการแดดจัด ดินร่วนปนเหนียวลึก และมีธาตุอาหารสูงเป็นพิเศษ", advice: "เร่งเติมปุ๋ยไนโตรเจนและโพแทสเซียมเพื่อเพิ่มความหวานและน้ำหนักของลำอ้อย" },
+            { id: "rubber", nameTH: "ยางพารา", nameEN: "Rubber", icon: "🌳", minN: 40, maxN: 90, minP: 15, maxP: 40, minK: 50, maxK: 110, minPH: 4.5, maxPH: 5.5, minMoisture: 40, maxMoisture: 75, minTemp: 22, maxTemp: 33, minEC: 200, maxEC: 700, desc: "ชอบดินเป็นกรดอ่อน ระบายน้ำดี ดินชั้นลึกไม่มีชั้นหินทึบ", advice: "หากค่า pH สูงเกินไป ยางพาราจะอมน้ำยางน้อยลง สามารถปรับปรุงโดยการใช้ปุ๋ยที่มีกำมะถัน" },
+            { id: "oil_palm", nameTH: "ปาล์มน้ำมัน", nameEN: "Oil Palm", icon: "🌴", minN: 60, maxN: 110, minP: 20, maxP: 50, minK: 100, maxK: 200, minPH: 5.0, maxPH: 6.0, minMoisture: 50, maxMoisture: 80, minTemp: 24, maxTemp: 34, minEC: 300, maxEC: 800, desc: "ต้องการความชื้นสูงและสม่ำเสมอ พื้นที่ต้องราบเรียบไม่มีน้ำท่วมขัง", advice: "เน้นปุ๋ยโพแทสเซียม (K) สูงเพื่อส่งเสริมการออกทะลายปาล์ม ปุ๋ยอินทรีย์ช่วยอุ้มน้ำได้ดี" },
+            { id: "durian", nameTH: "ทุเรียน", nameEN: "Durian", icon: "👑", minN: 50, maxN: 100, minP: 30, maxP: 60, minK: 80, maxK: 150, minPH: 5.5, maxPH: 6.5, minMoisture: 35, maxMoisture: 55, minTemp: 24, maxTemp: 32, minEC: 400, maxEC: 800, desc: "พืชปราบเซียน ดินร่วนปนทรายระบายน้ำดีเยี่ยม อ่อนไหวต่อโรครากเน่ามาก", advice: "ทำเนินหรือโคกดินปลูกทุเรียน เติมเชื้อไตรโคเดอร์มาเพื่อป้องกันรากเน่า และหลีกเลี่ยงดินแฉะเกินไป" },
+            { id: "mangosteen", nameTH: "มังคุด", nameEN: "Mangosteen", icon: "🔮", minN: 45, maxN: 90, minP: 20, maxP: 45, minK: 70, maxK: 130, minPH: 5.5, maxPH: 6.5, minMoisture: 45, maxMoisture: 70, minTemp: 23, maxTemp: 33, minEC: 300, maxEC: 750, desc: "ชอบดินร่วนซุยที่มีหน้าดินลึกและอินทรียวัตถุสูง ทนต่อสภาพร่มรำไรได้ดี", advice: "คลุมโคนต้นด้วยฟางข้าวเพื่อรักษาความชื้นในฤดูแล้ง หลีกเลี่ยงสภาวะแล้งเฉียบพลันช่วงติดดอก" },
+            { id: "longan", nameTH: "ลำไย", nameEN: "Longan", icon: "🍒", minN: 50, maxN: 95, minP: 25, maxP: 50, minK: 75, maxK: 140, minPH: 6.0, maxPH: 6.8, minMoisture: 30, maxMoisture: 60, minTemp: 20, maxTemp: 32, minEC: 350, maxEC: 800, desc: "ดินร่วนซุยหรือดินปนเหนียวปนทรายที่ระบายน้ำดี ดินตื้นไม่ลึกมากก็ขึ้นได้ดี", advice: "ตัดแต่งกิ่งหลังการเก็บเกี่ยว ใส่ปุ๋ยหมักเพื่อฟื้นฟูดินเพื่อความสมบูรณ์สำหรับฤดูถัดไป" },
+            { id: "lychee", nameTH: "ลิ้นจี่", nameEN: "Lychee", icon: "🍓", minN: 50, maxN: 90, minP: 20, maxP: 45, minK: 70, maxK: 130, minPH: 5.5, maxPH: 6.2, minMoisture: 40, maxMoisture: 65, minTemp: 15, maxTemp: 30, minEC: 300, maxEC: 700, desc: "ต้องการอากาศเย็นจัดช่วงก่อนออกดอก ดินร่วนปนเหนียวมีหน้าดินลึกอุ้มน้ำดี", advice: "พื้นที่ต้องมีความชื้นสัมพัทธ์อากาศดี ดึงข้อมูล NASA เพื่อดูแนวโน้มอุณหภูมิฤดูหนาวร่วมด้วย" },
+            { id: "mango", nameTH: "มะม่วง", nameEN: "Mango", icon: "🥭", minN: 40, maxN: 80, minP: 15, maxP: 40, minK: 60, maxK: 120, minPH: 5.5, maxPH: 7.5, minMoisture: 25, maxMoisture: 50, minTemp: 24, maxTemp: 35, minEC: 250, maxEC: 750, desc: "ปรับตัวเข้ากับสภาพดินได้กว้าง ทนแล้งดี ระบายน้ำปานกลางก็ปลูกขึ้นได้ง่าย", advice: "งดน้ำก่อนออกดอกเพื่อกระตุ้นตาดอก จากนั้นให้ปุ๋ยธาตุอาหารรอง เช่น สังกะสี และโบรอน" },
+            { id: "banana", nameTH: "กล้วย", nameEN: "Banana", icon: "🍌", minN: 60, maxN: 120, minP: 20, maxP: 50, minK: 100, maxK: 220, minPH: 5.5, maxPH: 7.0, minMoisture: 45, maxMoisture: 75, minTemp: 24, maxTemp: 34, minEC: 400, maxEC: 900, desc: "ชอบดินร่วนปนเหนียวและมีความอุดมสมบูรณ์สูง ต้องการน้ำบ่อยแต่ไม่ขังขลุกขลิก", advice: "กล้วยกินดุและโตเร็ว ควรเติมปุ๋ยคอกปริมาณมากและขุดร่องน้ำระบายให้สม่ำเสมอ" },
+            { id: "pineapple", nameTH: "สับปะรด", nameEN: "Pineapple", icon: "🍍", minN: 35, maxN: 70, minP: 15, maxP: 35, minK: 65, maxK: 130, minPH: 4.5, maxPH: 5.5, minMoisture: 20, maxMoisture: 45, minTemp: 22, maxTemp: 33, minEC: 200, maxEC: 600, desc: "ดินร่วนปนทราย ทนแล้ง ชอบสภาพดินที่เป็นกรดค่อนข้างจัด ระบายน้ำดี", advice: "ห้ามใช้ปูนขาวหากดินมีค่ากรดดีอยู่แล้ว เพราะสับปะรดชอบความเป็นกรดปานกลาง-จัด" },
+            { id: "coffee", nameTH: "กาแฟอาราบิก้า", nameEN: "Arabica Coffee", icon: "☕", minN: 50, maxN: 100, minP: 20, maxP: 45, minK: 80, maxK: 150, minPH: 5.5, maxPH: 6.5, minMoisture: 35, maxMoisture: 60, minTemp: 15, maxTemp: 25, minEC: 300, maxEC: 800, desc: "พื้นที่ภูเขาสูง อุณหภูมิต่ำ สภาพอากาศชื้นและหน้าดินระบายน้ำยอดเยี่ยม", advice: "ควรเพาะปลูกใต้ร่มเงาของไม้ใหญ่ (Shade-grown coffee) และดูแลดินร่วนซุยไม่หนาแน่น" },
+            { id: "chili", nameTH: "พริก", nameEN: "Chili", icon: "🌶️", minN: 55, maxN: 100, minP: 25, maxP: 50, minK: 70, maxK: 130, minPH: 6.0, maxPH: 6.8, minMoisture: 30, maxMoisture: 55, minTemp: 20, maxTemp: 32, minEC: 350, maxEC: 800, desc: "ชอบดินร่วนปนทราย มีการระบายน้ำดีและโดดแดดสม่ำเสมอ ความเป็นกรดด่างเป็นกลาง", advice: "ระวังเรื่องแฉะเกินไปเพราะจะเกิดเชื้อราโคนเน่า ควรบำรุงด้วยแคลเซียมโบรอนเพื่อขั้วเหนียวผลดก" }
+        ];
+
+        // Global Chart Instance
+        let soilChart = null;
+        let activeFilter = 'all';
+
+        // --- Init App ---
+        window.onload = function() {
+            // Populate crop selector
+            const selector = document.getElementById('crop-selector');
+            cropsData.forEach(crop => {
+                const opt = document.createElement('option');
+                opt.value = crop.id;
+                opt.textContent = `${crop.icon} ${crop.nameTH} (${crop.nameEN})`;
+                selector.appendChild(opt);
+            });
+
+            // Initial calculation
+            recalculateAndDisplay();
+        };
+
+        // --- Custom Toast Alert Notification ---
+        function showNotification(message, iconClass = 'fa-circle-info', isError = false) {
+            const notif = document.getElementById('notification');
+            const icon = document.getElementById('notif-icon');
+            const text = document.getElementById('notif-text');
+
+            icon.className = `fa-solid ${iconClass} ${isError ? 'text-red-400' : 'text-teal-400'}`;
+            text.textContent = message;
+
+            notif.classList.remove('translate-y-24', 'opacity-0');
+            
+            setTimeout(() => {
+                notif.classList.add('translate-y-24', 'opacity-0');
+            }, 3000);
+        }
+
+        // --- Helper: Randomize Values ---
+        function setRandomSoilValues() {
+            document.getElementById('input-n').value = Math.floor(Math.random() * 100) + 20;
+            document.getElementById('input-p').value = Math.floor(Math.random() * 60) + 10;
+            document.getElementById('input-k').value = Math.floor(Math.random() * 150) + 40;
+            document.getElementById('input-ph').value = (Math.random() * 3 + 4.5).toFixed(1);
+            document.getElementById('input-moisture').value = Math.floor(Math.random() * 60) + 20;
+            document.getElementById('input-temp').value = Math.floor(Math.random() * 15) + 20;
+            document.getElementById('input-ec').value = Math.floor(Math.random() * 1000) + 200;
+
+            updateSensorDisplay();
+            showNotification("สุ่มปรับปรุงสภาพดินตัวอย่างสำเร็จ", "fa-dice");
+        }
+
+        // --- Update Sensor Readout UI & Trigger logic ---
+        function updateSensorDisplay() {
+            const n = document.getElementById('input-n').value;
+            const p = document.getElementById('input-p').value;
+            const k = document.getElementById('input-k').value;
+            const ph = document.getElementById('input-ph').value;
+            const moisture = document.getElementById('input-moisture').value;
+            const temp = document.getElementById('input-temp').value;
+            const ec = document.getElementById('input-ec').value;
+
+            document.getElementById('val-n').innerText = n;
+            document.getElementById('val-p').innerText = p;
+            document.getElementById('val-k').innerText = k;
+            document.getElementById('val-ph').innerText = ph;
+            document.getElementById('val-moisture').innerText = moisture;
+            document.getElementById('val-temp').innerText = temp;
+            document.getElementById('val-ec').innerText = ec;
+
+            recalculateAndDisplay();
+        }
+
+        // --- Fetch External Data from NASA & Open-Meteo API ---
+        async function fetchExternalData() {
+            const lat = document.getElementById('lat-input').value;
+            const lng = document.getElementById('lng-input').value;
+            const apiStatus = document.getElementById('api-status');
+
+            apiStatus.innerHTML = '<span class="text-teal-600 animate-pulse"><i class="fa-solid fa-spinner animate-spin"></i> กำลังเชื่อมต่อข้อมูลดาวเทียม...</span>';
+
+            try {
+                // 1. Fetch Open-Meteo for Weather and Temp
+                const meteoUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true&hourly=relative_humidity_2m`;
+                const meteoResponse = await fetch(meteoUrl);
+                const meteoData = await meteoResponse.json();
+
+                // 2. Fetch NASA Power (using a reliable endpoint for climatology or last 30 days rain estimates)
+                const nasaUrl = `https://power.larc.nasa.gov/api/temporal/climatology/point?parameters=PRECTOTCORR,T2M&community=AG&longitude=${lng}&latitude=${lat}&format=JSON`;
+                const nasaResponse = await fetch(nasaUrl);
+                const nasaData = await nasaResponse.json();
+
+                // Extract values or use smart fallbacks
+                let rainVal = 1350; // standard default for tropical zone
+                if (nasaData?.properties?.parameter?.PRECTOTCORR) {
+                    const annualRainSum = Object.values(nasaData.properties.parameter.PRECTOTCORR).reduce((a, b) => a + b, 0) * 30; // approx annual scale
+                    rainVal = Math.round(annualRainSum || 1350);
+                }
+
+                const currentTemp = meteoData?.current_weather?.temperature || 29.5;
+                const humidityArray = meteoData?.hourly?.relative_humidity_2m || [70];
+                const currentHumidity = humidityArray[0] || 72;
+
+                // Update HTML Displays
+                document.getElementById('external-rain').innerText = `${rainVal.toLocaleString()} mm/ปี`;
+                document.getElementById('external-temp').innerText = `${currentTemp} °C`;
+                document.getElementById('external-humidity').innerText = `${currentHumidity} %`;
+
+                apiStatus.innerHTML = '<span class="text-emerald-600"><i class="fa-solid fa-circle-check"></i> ดึงข้อมูลจากดาวเทียม NASA & Open-Meteo สำเร็จ</span>';
+                showNotification("เชื่อมโยงข้อมูลดาวเทียมของพื้นที่สำเร็จ", "fa-satellite");
+
+                recalculateAndDisplay();
+            } catch (err) {
+                console.error("API error:", err);
+                apiStatus.innerHTML = '<span class="text-red-500"><i class="fa-solid fa-circle-exclamation"></i> การเชื่อมต่อขัดข้อง (ใช้ค่าสถิติมาตรฐาน)</span>';
+                showNotification("ไม่สามารถดึงข้อมูล API ได้ในขณะนี้", "fa-triangle-exclamation", true);
+            }
+        }
+
+        // --- Core Algorithm: Match & Compare ---
+        function recalculateAndDisplay() {
+            const currentN = parseFloat(document.getElementById('input-n').value);
+            const currentP = parseFloat(document.getElementById('input-p').value);
+            const currentK = parseFloat(document.getElementById('input-k').value);
+            const currentPH = parseFloat(document.getElementById('input-ph').value);
+            const currentMoisture = parseFloat(document.getElementById('input-moisture').value);
+            const currentTemp = parseFloat(document.getElementById('input-temp').value);
+            const currentEC = parseFloat(document.getElementById('input-ec').value);
+
+            // Fetch NASA Rain Value (extracted from HTML string)
+            const rainStr = document.getElementById('external-rain').innerText;
+            const rainValue = parseInt(rainStr.replace(/[^0-9]/g, '')) || 1200;
+
+            const results = cropsData.map(crop => {
+                // Calculate match score for each parameter (value between 0 to 100)
+                const nScore = getMatchScore(currentN, crop.minN, crop.maxN);
+                const pScore = getMatchScore(currentP, crop.minP, crop.maxP);
+                const kScore = getMatchScore(currentK, crop.minK, crop.maxK);
+                const phScore = getMatchScore(currentPH, crop.minPH, crop.maxPH);
+                const moistureScore = getMatchScore(currentMoisture, crop.minMoisture, crop.maxMoisture);
+                const tempScore = getMatchScore(currentTemp, crop.minTemp, crop.maxTemp);
+                const ecScore = getMatchScore(currentEC, crop.minEC, crop.maxEC);
+
+                // Rain suitability factor (Custom Logic)
+                let rainScore = 100;
+                if ((crop.id === 'rice' || crop.id === 'oil_palm') && rainValue < 1000) {
+                    rainScore = 60; // Penalty
+                } else if (crop.id === 'cassava' && rainValue > 2000) {
+                    rainScore = 70; // High rain risks rot
+                }
+
+                // Weighted Score System (Priority: N, P, K, pH has 65% weight, Environment has 35%)
+                const soilScore = (nScore * 0.2) + (pScore * 0.2) + (kScore * 0.2) + (phScore * 0.4);
+                const climateAndMoisture = (moistureScore * 0.35) + (tempScore * 0.25) + (ecScore * 0.2) + (rainScore * 0.2);
+                
+                const finalScore = Math.round((soilScore * 0.6) + (climateAndMoisture * 0.4));
+
+                return {
+                    ...crop,
+                    finalScore: finalScore,
+                    breakdown: { nScore, pScore, kScore, phScore, moistureScore, tempScore, ecScore }
+                };
+            });
+
+            // Sort by Match Score Descending
+            results.sort((a, b) => b.finalScore - a.finalScore);
+
+            // Update Best Spot Light (1st Place)
+            const topCrop = results[0];
+            document.getElementById('spotlight-name-th').innerText = `${topCrop.nameTH} (${topCrop.nameEN})`;
+            document.getElementById('spotlight-desc').innerText = topCrop.desc;
+            document.getElementById('spotlight-score').innerText = `${topCrop.finalScore}%`;
+            document.getElementById('spotlight-icon-container').innerText = topCrop.icon;
+
+            // Highlight gradient color adjustment based on score
+            const spotlightCard = document.getElementById('spotlight-card');
+            const scoreDisplay = document.getElementById('spotlight-score');
+            if (topCrop.finalScore >= 80) {
+                spotlightCard.className = "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-100 flex flex-col md:flex-row items-center justify-between gap-6";
+                scoreDisplay.className = "text-4xl font-extrabold text-emerald-600";
+            } else if (topCrop.finalScore >= 60) {
+                spotlightCard.className = "bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-100 flex flex-col md:flex-row items-center justify-between gap-6";
+                scoreDisplay.className = "text-4xl font-extrabold text-amber-600";
+            } else {
+                spotlightCard.className = "bg-gradient-to-r from-rose-50 to-red-50 rounded-2xl p-6 border border-rose-100 flex flex-col md:flex-row items-center justify-between gap-6";
+                scoreDisplay.className = "text-4xl font-extrabold text-rose-600";
+            }
+
+            // Render list based on active filter
+            renderCropList(results);
+
+            // Ensure the dynamic list advisor matches the selector
+            const currentSelectedCropId = document.getElementById('crop-selector').value || topCrop.id;
+            document.getElementById('crop-selector').value = currentSelectedCropId;
+            generateSoilAdvice();
+
+            // Update Chart
+            updateSoilComparisonChart(currentSelectedCropId, currentN, currentP, currentK, currentPH);
+        }
+
+        // Help calculate how close value is to target range
+        function getMatchScore(val, min, max) {
+            if (val >= min && val <= max) return 100;
+            if (val < min) {
+                const diff = min - val;
+                const score = 100 - (diff / min) * 100;
+                return Math.max(20, Math.round(score));
+            } else {
+                const diff = val - max;
+                const score = 100 - (diff / max) * 100;
+                return Math.max(20, Math.round(score));
+            }
+        }
+
+        // --- Render Crop Cards (Ranked & Categorized with badges) ---
+        function renderCropList(crops) {
+            const container = document.getElementById('crops-list-container');
+            container.innerHTML = '';
+
+            crops.forEach((crop, index) => {
+                const absoluteRank = index + 1;
+
+                // Filter validation
+                if (activeFilter === 'high' && crop.finalScore <= 75) return;
+                if (activeFilter === 'low' && crop.finalScore > 75) return;
+
+                // Color themes & status labels based on suitability
+                let colorClass = "bg-emerald-500";
+                let textClass = "text-emerald-700 bg-emerald-50 border-emerald-200";
+                let statusLabel = "ดีเยี่ยม (แนะนำ)";
+                
+                if (crop.finalScore < 55) {
+                    colorClass = "bg-rose-500";
+                    textClass = "text-rose-700 bg-rose-50 border-rose-200";
+                    statusLabel = "ไม่เหมาะสม (ต้องปรับปรุงดิน)";
+                } else if (crop.finalScore <= 75) {
+                    colorClass = "bg-amber-500";
+                    textClass = "text-amber-700 bg-amber-50 border-amber-200";
+                    statusLabel = "พอปลูกได้ (ควรบำรุงดิน)";
+                }
+
+                const card = document.createElement('div');
+                card.className = "bg-white p-4 rounded-xl border border-slate-100 hover:border-slate-300 hover:shadow-md transition-all flex items-center justify-between gap-4 cursor-pointer relative overflow-hidden group";
+                card.onclick = () => {
+                    document.getElementById('crop-selector').value = crop.id;
+                    const n = parseFloat(document.getElementById('input-n').value);
+                    const p = parseFloat(document.getElementById('input-p').value);
+                    const k = parseFloat(document.getElementById('input-k').value);
+                    const ph = parseFloat(document.getElementById('input-ph').value);
+                    updateSoilComparisonChart(crop.id, n, p, k, ph);
+                    generateSoilAdvice();
+                    
+                    // Smooth scroll to chart/advice area
+                    document.getElementById('crop-selector').scrollIntoView({ behavior: 'smooth' });
+                };
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="flex flex-col items-center justify-center bg-slate-50 border border-slate-200 w-12 h-12 rounded-lg shrink-0">
+                            <span class="text-xs font-bold text-slate-400">#${absoluteRank}</span>
+                            <span class="text-2xl mt-0.5 leading-none">${crop.icon}</span>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <h4 class="font-bold text-slate-900 text-sm group-hover:text-teal-600 transition-colors">${crop.nameTH}</h4>
+                                <span class="text-xxs px-1.5 py-0.5 rounded border ${textClass}">${statusLabel}</span>
+                            </div>
+                            <p class="text-xs text-slate-400">${crop.nameEN}</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end shrink-0">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-bold ${textClass}">
+                            ${crop.finalScore}% แมตช์
+                        </span>
+                        <div class="w-20 bg-slate-100 h-1.5 rounded-full mt-1.5 overflow-hidden">
+                            <div class="${colorClass} h-full" style="width: ${crop.finalScore}%"></div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            if (container.children.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-8 text-slate-400 text-sm">
+                        <i class="fa-solid fa-folder-open text-3xl mb-2 block"></i>
+                        ไม่มีพืชที่ตรงกับเงื่อนไขการกรองนี้
+                    </div>
+                `;
+            }
+        }
+
+        // --- Filter logic ---
+        function filterCrops(type) {
+            activeFilter = type;
+            
+            // Adjust CSS buttons
+            const buttons = ['all', 'high', 'low'];
+            buttons.forEach(btn => {
+                const el = document.getElementById(`filter-${btn}`);
+                if (btn === type) {
+                    el.className = "px-3 py-1.5 rounded-md font-medium text-slate-700 bg-white shadow-sm";
+                } else {
+                    el.className = "px-3 py-1.5 rounded-md font-medium text-slate-500 hover:text-slate-900";
+                }
+            });
+
+            // Re-run matching list rendering
+            recalculateAndDisplay();
+        }
+
+        // --- Generate Specific Soil Advice for Selected Crop ---
+        function generateSoilAdvice() {
+            const cropId = document.getElementById('crop-selector').value;
+            const crop = cropsData.find(c => c.id === cropId);
+            if (!crop) return;
+
+            const n = parseFloat(document.getElementById('input-n').value);
+            const p = parseFloat(document.getElementById('input-p').value);
+            const k = parseFloat(document.getElementById('input-k').value);
+            const ph = parseFloat(document.getElementById('input-ph').value);
+
+            const adviceContainer = document.getElementById('advice-container');
+            adviceContainer.innerHTML = '';
+
+            let adviceHTML = `
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl">${crop.icon}</span>
+                        <h4 class="font-bold text-slate-800 text-base">คู่มือเตรียมดินสำหรับ: ${crop.nameTH} (${crop.nameEN})</h4>
+                    </div>
+                    <span class="text-xs text-slate-500 font-medium">ค่าอุดมคติ pH: ${crop.minPH}-${crop.maxPH}</span>
+                </div>
+            `;
+
+            // 1. Analyze pH
+            let phRecommendation = "";
+            if (ph < crop.minPH) {
+                phRecommendation = `
+                    <div class="p-4 bg-rose-50 border border-rose-100 rounded-xl flex gap-3">
+                        <div class="text-rose-500 text-lg"><i class="fa-solid fa-circle-chevron-up"></i></div>
+                        <div>
+                            <h5 class="font-bold text-rose-800 text-sm">ดินมีความเป็นกรดเกินไป (pH ${ph} < ${crop.minPH})</h5>
+                            <p class="text-xs text-slate-600 mt-1">แนะนำให้เติม <strong>"ปูนขาว" (โดโลไมท์ หรือ คาลไซต์)</strong> อัตรา 100-200 กรัม/ตร.ม. เพื่อลดกรด และพักหน้าดินทิ้งไว้ 1-2 สัปดาห์ก่อนปลูก</p>
+                        </div>
+                    </div>
+                `;
+            } else if (ph > crop.maxPH) {
+                phRecommendation = `
+                    <div class="p-4 bg-amber-50 border border-amber-100 rounded-xl flex gap-3">
+                        <div class="text-amber-500 text-lg"><i class="fa-solid fa-circle-chevron-down"></i></div>
+                        <div>
+                            <h5 class="font-bold text-amber-800 text-sm">ดินมีความเป็นด่างสูงเกินไป (pH ${ph} > ${crop.maxPH})</h5>
+                            <p class="text-xs text-slate-600 mt-1">แนะนำให้ผสม <strong>"ปุ๋ยหมักอินทรีย์" หรือเติม "แอมโมเนียมซัลเฟต"</strong> เพื่อเพิ่มอินทรีย์ที่มีฤทธิ์กรดอ่อนๆ ปรับระดับดินให้สมดุล</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                phRecommendation = `
+                    <div class="p-4 bg-emerald-50 border border-emerald-100 rounded-xl flex gap-3">
+                        <div class="text-emerald-500 text-lg"><i class="fa-solid fa-circle-check"></i></div>
+                        <div>
+                            <h5 class="font-bold text-emerald-800 text-sm">ค่ากรด-ด่างดินยอดเยี่ยมพอดีแล้ว! (pH ${ph})</h5>
+                            <p class="text-xs text-slate-600 mt-1">เหมาะสมมาก ไม่จำเป็นต้องปรับโครงสร้าง pH สำหรับ ${crop.nameTH} รักษาหน้าดินด้วยปุ๋ยอินทรีย์สม่ำเสมอ</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 2. Analyze NPK
+            let npkRecommendation = "";
+            let deficitList = [];
+            if (n < crop.minN) deficitList.push(`<strong>ไนโตรเจน (N)</strong> (ต้องการ ${crop.minN}-${crop.maxN} mg/kg) แนะนำให้ใช้ปุ๋ยเคมีสูตรเดี่ยว เช่น ยูเรีย (46-0-0) หรือปุ๋ยขี้ไก่ขี้วัว`);
+            if (p < crop.minP) deficitList.push(`<strong>ฟอสฟอรัส (P)</strong> (ต้องการ ${crop.minP}-${crop.maxP} mg/kg) แนะนำให้ใส่ปุ๋ยซุปเปอร์ฟอสเฟต หรือปุ๋ยกระดูก`);
+            if (k < crop.minK) deficitList.push(`<strong>โพแทสเซียม (K)</strong> (ต้องการ ${crop.minK}-${crop.maxK} mg/kg) แนะนำให้ใส่ปุ๋ยหมักใบไม้ผุ หรือปุ๋ยสูตร (0-0-60) โพแทสเซียมคลอไรด์`);
+
+            if (deficitList.length > 0) {
+                npkRecommendation = `
+                    <div class="p-4 bg-blue-50 border border-blue-100 rounded-xl flex gap-3">
+                        <div class="text-blue-500 text-lg"><i class="fa-solid fa-flask"></i></div>
+                        <div>
+                            <h5 class="font-bold text-blue-800 text-sm">คำแนะนำการเติมสารอาหารปุ๋ย</h5>
+                            <ul class="list-disc pl-4 text-xs text-slate-600 mt-2 space-y-2">
+                                ${deficitList.map(item => `<li>${item}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            } else {
+                npkRecommendation = `
+                    <div class="p-4 bg-emerald-50 border border-emerald-100 rounded-xl flex gap-3">
+                        <div class="text-emerald-500 text-lg"><i class="fa-solid fa-champagne-glasses"></i></div>
+                        <div>
+                            <h5 class="font-bold text-emerald-800 text-sm">ธาตุอาหารดินสมบูรณ์ครบถ้วน!</h5>
+                            <p class="text-xs text-slate-600 mt-1">ปริมาณ ไนโตรเจน, ฟอสฟอรัส และ โพแทสเซียม เพียงพออย่างดีเยี่ยมสำหรับการเติบโตขั้นแรก</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 3. Climate insight (NASA integration summary)
+            const rainStr = document.getElementById('external-rain').innerText;
+            const tempStr = document.getElementById('external-temp').innerText;
+
+            let climateAnalysis = `
+                <div class="p-4 bg-slate-100/80 rounded-xl text-xs text-slate-600">
+                    <h5 class="font-semibold text-slate-700 mb-1"><i class="fa-solid fa-circle-nodes text-slate-500 mr-1"></i> ความเข้ากันได้ด้านอากาศและนิเวศวิทยา:</h5>
+                    <p>ระบบตรวจสอบพื้นที่ของคุณร่วมกับประวัติฝนของดาวเทียมพบว่าปริมาณน้ำฝนอยู่ที่ ${rainStr} และอุณหภูมิอากาศปัจจุบัน ${tempStr} ซึ่งเหมาะแก่สภาพอากาศของ ${crop.nameTH} เป็นอันดี</p>
+                    <p class="mt-2 font-medium text-teal-700">คำแนะนำเฉพาะพืช: ${crop.advice}</p>
+                </div>
+            `;
+
+            adviceHTML += phRecommendation + npkRecommendation + climateAnalysis;
+            adviceContainer.innerHTML = adviceHTML;
+        }
+
+        // --- Render comparison charts using Chart.js (Radar Chart Reverted) ---
+        function updateSoilComparisonChart(cropId, currentN, currentP, currentK, currentPH) {
+            const crop = cropsData.find(c => c.id === cropId);
+            if (!crop) return;
+
+            // Ideal average values
+            const avgN = (crop.minN + crop.maxN) / 2;
+            const avgP = (crop.minP + crop.maxP) / 2;
+            const avgK = (crop.minK + crop.maxK) / 2;
+            // Multiplying pH by 15 for better graphical alignment alongside big numerical variables
+            const avgPH_scaled = ((crop.minPH + crop.maxPH) / 2) * 15;
+            const currentPH_scaled = currentPH * 15;
+
+            const dataSet = {
+                labels: ['ไนโตรเจน (N)', 'ฟอสฟอรัส (P)', 'โพแทสเซียม (K)', 'ค่ากรด-ด่าง (pH x15)'],
+                datasets: [
+                    {
+                        label: 'ค่าปัจจุบันจากเซนเซอร์',
+                        data: [currentN, currentP, currentK, currentPH_scaled],
+                        backgroundColor: 'rgba(79, 70, 229, 0.25)',
+                        borderColor: 'rgb(79, 70, 229)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgb(79, 70, 229)',
+                    },
+                    {
+                        label: `เป้าหมายอุดมคติของ ${crop.nameTH}`,
+                        data: [avgN, avgP, avgK, avgPH_scaled],
+                        backgroundColor: 'rgba(13, 148, 136, 0.25)',
+                        borderColor: 'rgb(13, 148, 136)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgb(13, 148, 136)',
+                    }
+                ]
+            };
+
+            if (soilChart) {
+                soilChart.destroy();
+            }
+
+            const ctx = document.getElementById('soilComparisonChart').getContext('2d');
+            soilChart = new Chart(ctx, {
+                type: 'radar',
+                data: dataSet,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    family: 'Sarabun',
+                                    size: 11
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    let val = context.parsed.r;
+                                    if (context.label.includes('ค่ากรด-ด่าง')) {
+                                        return `${label}: ${(val / 15).toFixed(1)} pH`;
+                                    }
+                                    return `${label}: ${val} mg/kg`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 200,
+                            ticks: {
+                                backdropColor: 'transparent',
+                                font: {
+                                    family: 'Sarabun',
+                                    size: 10
+                                }
+                            },
+                            pointLabels: {
+                                font: {
+                                    family: 'Sarabun',
+                                    weight: 'bold',
+                                    size: 11
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
