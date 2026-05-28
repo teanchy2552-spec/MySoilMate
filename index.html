@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>My Soil Mate - เครื่องมือตรวจวัดสภาพดินอัจฉริยะ</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,35 +12,37 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js for beautiful charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
         body {
             font-family: 'Sarabun', 'Inter', sans-serif;
             background-color: #f8fafc;
+            overflow-x: hidden; /* Prevent horizontal scrolling on mobile */
         }
         .gradient-bg {
             background: linear-gradient(135deg, #1e3a8a 0%, #0d9488 100%);
         }
     </style>
 </head>
-<body class="text-slate-800">
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
 
     <!-- Top Navigation Bar -->
     <nav class="bg-white border-b border-slate-100 sticky top-0 z-50 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
                 <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center text-white shadow-md">
+                    <div class="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center text-white shadow-md shrink-0">
                         <i class="fa-solid fa-seedling text-lg"></i>
                     </div>
                     <div>
-                        <span class="font-bold text-lg tracking-tight text-slate-900 block leading-tight">My Soil Mate</span>
-                        <span class="text-xs text-slate-500">เครื่องมือตรวจวัดสภาพดินอัจฉริยะ 7-in-1</span>
+                        <span class="font-bold text-base sm:text-lg tracking-tight text-slate-900 block leading-tight">My Soil Mate</span>
+                        <span class="text-[10px] sm:text-xs text-slate-500">เครื่องมือตรวจวัดสภาพดินอัจฉริยะ 7-in-1</span>
                     </div>
                 </div>
-                <div class="flex items-center space-x-2">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                <div class="flex items-center space-x-2 shrink-0">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
                         <span class="w-1.5 h-1.5 mr-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        Modbus Connected
+                        <span class="hidden xs:inline">Modbus </span>Connected
                     </span>
                 </div>
             </div>
@@ -48,134 +50,152 @@
     </nav>
 
     <!-- Main Content Area -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 flex-grow w-full">
         
         <!-- Header Section -->
-        <div class="mb-8 bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div>
-                <h1 class="text-2xl md:text-3xl font-bold text-slate-900 mb-2">วิเคราะห์ดินเพื่อการเพาะปลูกที่แม่นยำ</h1>
-                <p class="text-slate-500 max-w-2xl">
+        <div class="mb-6 md:mb-8 bg-white rounded-2xl p-5 sm:p-6 md:p-8 shadow-sm border border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div class="space-y-2">
+                <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 leading-tight">วิเคราะห์ดินเพื่อการเพาะปลูกที่แม่นยำ</h1>
+                <p class="text-sm text-slate-500 max-w-2xl leading-relaxed">
                     ผสานข้อมูลจากเซนเซอร์ตรวจวัดดินแบบ 7-in-1 (TH-EC-PH-NPK) เข้ากับข้อมูลสภาพภูมิอากาศระดับโลกจาก NASA POWER และ Open-Meteo เพื่อหาพืชที่เหมาะสมที่สุดสำหรับคุณ
                 </p>
             </div>
+            
             <!-- Quick GPS Coordinates Setup -->
-            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 shrink-0 w-full md:w-auto">
-                <h3 class="text-sm font-semibold text-slate-700 mb-2"><i class="fa-solid fa-location-dot text-teal-600 mr-1"></i> พิกัดพื้นที่เพาะปลูก</h3>
-                <div class="flex flex-wrap gap-2">
-                    <input id="lat-input" type="number" step="0.0001" value="13.7563" class="w-24 px-2 py-1 text-sm border border-slate-200 rounded-lg text-center" placeholder="Latitude">
-                    <input id="lng-input" type="number" step="0.0001" value="100.5018" class="w-24 px-2 py-1 text-sm border border-slate-200 rounded-lg text-center" placeholder="Longitude">
-                    <button onclick="fetchExternalData()" class="px-3 py-1 bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium rounded-lg transition-colors flex items-center gap-1">
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/60 shrink-0 w-full lg:w-auto">
+                <h3 class="text-xs sm:text-sm font-semibold text-slate-700 mb-2"><i class="fa-solid fa-location-dot text-teal-600 mr-1"></i> พิกัดพื้นที่เพาะปลูก</h3>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <input id="lat-input" type="number" step="0.0001" value="13.7563" class="w-full sm:w-24 px-3 py-2 text-sm border border-slate-200 rounded-lg text-center bg-white" placeholder="Latitude">
+                        <input id="lng-input" type="number" step="0.0001" value="100.5018" class="w-full sm:w-24 px-3 py-2 text-sm border border-slate-200 rounded-lg text-center bg-white" placeholder="Longitude">
+                    </div>
+                    <button onclick="fetchExternalData()" class="w-full sm:w-auto px-4 py-2 bg-teal-600 hover:bg-teal-700 active:scale-95 text-white text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-sm touch-manipulation min-h-[40px]">
                         <i class="fa-solid fa-rotate"></i> ดึงข้อมูล API
                     </button>
                 </div>
-                <div id="api-status" class="text-xxs text-slate-400 mt-2 text-right">ข้อมูลจำลองท้องถิ่น (กดปุ่มเพื่อดึงข้อมูลจริง)</div>
+                <div id="api-status" class="text-[10px] text-slate-400 mt-2 text-center sm:text-right">ข้อมูลจำลองท้องถิ่น (กดปุ่มเพื่อดึงข้อมูลจริง)</div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Adaptive Grid Layout for all screen sizes -->
+        <div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
             
-            <!-- COLUMN 1: Sensor Inputs & Live Readings -->
+            <!-- COLUMN 1: Sensor Readings (Display Only) -->
             <div class="lg:col-span-1 space-y-6">
                 
                 <!-- Sensor Simulation Controls -->
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-100">
                     <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
-                        <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                            <i class="fa-solid fa-sliders text-indigo-600"></i>
-                            จำลองค่าจากเซนเซอร์
+                        <h2 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-square-poll-vertical text-indigo-600"></i>
+                            ค่าตรวจวัดจากเซนเซอร์ 7-in-1
                         </h2>
-                        <button onclick="setRandomSoilValues()" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">สุ่มค่าตัวอย่าง</button>
+                        <button onclick="setRandomSoilValues()" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold active:scale-95 transition-transform touch-manipulation px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 rounded-lg flex items-center gap-1">
+                            <i class="fa-solid fa-arrows-rotate"></i> ดึงค่าล่าสุด
+                        </button>
                     </div>
 
+                    <!-- Sensor Visual Displays (Completely Read-only) -->
                     <div class="space-y-4">
                         <!-- Nitrogen (N) -->
-                        <div>
-                            <div class="flex justify-between text-sm mb-1">
+                        <div class="bg-slate-50/50 p-3.5 rounded-xl border border-slate-100">
+                            <div class="flex justify-between text-xs sm:text-sm mb-2">
                                 <span class="font-medium text-slate-700">ไนโตรเจน (N)</span>
                                 <span class="font-bold text-indigo-600"><span id="val-n">45</span> mg/kg</span>
                             </div>
-                            <input id="input-n" type="range" min="0" max="150" value="45" oninput="updateSensorDisplay()" class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                            <div class="w-full bg-slate-200/70 h-2 rounded-full overflow-hidden">
+                                <div id="bar-n" class="bg-indigo-600 h-full transition-all duration-500 ease-out" style="width: 30%"></div>
+                            </div>
                         </div>
 
                         <!-- Phosphorus (P) -->
-                        <div>
-                            <div class="flex justify-between text-sm mb-1">
+                        <div class="bg-slate-50/50 p-3.5 rounded-xl border border-slate-100">
+                            <div class="flex justify-between text-xs sm:text-sm mb-2">
                                 <span class="font-medium text-slate-700">ฟอสฟอรัส (P)</span>
                                 <span class="font-bold text-indigo-600"><span id="val-p">30</span> mg/kg</span>
                             </div>
-                            <input id="input-p" type="range" min="0" max="100" value="30" oninput="updateSensorDisplay()" class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                            <div class="w-full bg-slate-200/70 h-2 rounded-full overflow-hidden">
+                                <div id="bar-p" class="bg-indigo-500 h-full transition-all duration-500 ease-out" style="width: 30%"></div>
+                            </div>
                         </div>
 
                         <!-- Potassium (K) -->
-                        <div>
-                            <div class="flex justify-between text-sm mb-1">
+                        <div class="bg-slate-50/50 p-3.5 rounded-xl border border-slate-100">
+                            <div class="flex justify-between text-xs sm:text-sm mb-2">
                                 <span class="font-medium text-slate-700">โพแทสเซียม (K)</span>
                                 <span class="font-bold text-indigo-600"><span id="val-k">80</span> mg/kg</span>
                             </div>
-                            <input id="input-k" type="range" min="0" max="250" value="80" oninput="updateSensorDisplay()" class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                            <div class="w-full bg-slate-200/70 h-2 rounded-full overflow-hidden">
+                                <div id="bar-k" class="bg-indigo-400 h-full transition-all duration-500 ease-out" style="width: 32%"></div>
+                            </div>
                         </div>
 
                         <!-- pH Value -->
-                        <div>
-                            <div class="flex justify-between text-sm mb-1">
+                        <div class="bg-slate-50/50 p-3.5 rounded-xl border border-slate-100">
+                            <div class="flex justify-between text-xs sm:text-sm mb-2">
                                 <span class="font-medium text-slate-700">ความเป็นกรด-ด่าง (pH)</span>
                                 <span class="font-bold text-teal-600"><span id="val-ph">6.2</span> pH</span>
                             </div>
-                            <input id="input-ph" type="range" min="3" max="10" step="0.1" value="6.2" oninput="updateSensorDisplay()" class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-teal-600">
+                            <div class="w-full bg-slate-200/70 h-2 rounded-full overflow-hidden">
+                                <div id="bar-ph" class="bg-teal-500 h-full transition-all duration-500 ease-out" style="width: 45%"></div>
+                            </div>
                         </div>
 
                         <!-- Soil Moisture -->
-                        <div>
-                            <div class="flex justify-between text-sm mb-1">
+                        <div class="bg-slate-50/50 p-3.5 rounded-xl border border-slate-100">
+                            <div class="flex justify-between text-xs sm:text-sm mb-2">
                                 <span class="font-medium text-slate-700">ความชื้นดิน (Moisture)</span>
                                 <span class="font-bold text-blue-600"><span id="val-moisture">35</span> %</span>
                             </div>
-                            <input id="input-moisture" type="range" min="0" max="100" value="35" oninput="updateSensorDisplay()" class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                            <div class="w-full bg-slate-200/70 h-2 rounded-full overflow-hidden">
+                                <div id="bar-moisture" class="bg-blue-500 h-full transition-all duration-500 ease-out" style="width: 35%"></div>
+                            </div>
                         </div>
 
                         <!-- Temperature -->
-                        <div>
-                            <div class="flex justify-between text-sm mb-1">
+                        <div class="bg-slate-50/50 p-3.5 rounded-xl border border-slate-100">
+                            <div class="flex justify-between text-xs sm:text-sm mb-2">
                                 <span class="font-medium text-slate-700">อุณหภูมิดิน (Temp)</span>
                                 <span class="font-bold text-amber-600"><span id="val-temp">28</span> °C</span>
                             </div>
-                            <input id="input-temp" type="range" min="10" max="45" value="28" oninput="updateSensorDisplay()" class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-amber-600">
+                            <div class="w-full bg-slate-200/70 h-2 rounded-full overflow-hidden">
+                                <div id="bar-temp" class="bg-amber-500 h-full transition-all duration-500 ease-out" style="width: 51%"></div>
+                            </div>
                         </div>
 
                         <!-- Electrical Conductivity (EC) -->
-                        <div>
-                            <div class="flex justify-between text-sm mb-1">
+                        <div class="bg-slate-50/50 p-3.5 rounded-xl border border-slate-100">
+                            <div class="flex justify-between text-xs sm:text-sm mb-2">
                                 <span class="font-medium text-slate-700">ค่านำไฟฟ้าดิน (EC)</span>
                                 <span class="font-bold text-emerald-600"><span id="val-ec">450</span> us/cm</span>
                             </div>
-                            <input id="input-ec" type="range" min="0" max="2000" value="450" oninput="updateSensorDisplay()" class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-600">
+                            <div class="w-full bg-slate-200/70 h-2 rounded-full overflow-hidden">
+                                <div id="bar-ec" class="bg-emerald-500 h-full transition-all duration-500 ease-out" style="width: 22%"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- API Weather & Satellite Card -->
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                    <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2 mb-4">
+                <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-100">
+                    <h2 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2 mb-4">
                         <i class="fa-solid fa-cloud-sun text-amber-500"></i>
-                        ข้อมูล NASA & Open-Meteo
+                        ข้อมูลภูมิอากาศภายนอก
                     </h2>
                     
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
-                            <span class="text-sm font-medium text-slate-600">ปริมาณน้ำฝนรายปี (NASA)</span>
-                            <span id="external-rain" class="text-base font-bold text-slate-800">1,250 mm</span>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-3">
+                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
+                            <span class="text-xs sm:text-sm font-medium text-slate-600">ปริมาณฝนรายปี (NASA)</span>
+                            <span id="external-rain" class="text-xs sm:text-sm md:text-base font-bold text-slate-800">1,250 mm</span>
                         </div>
-                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
-                            <span class="text-sm font-medium text-slate-600">อุณหภูมิอากาศเฉลี่ย (Open-Meteo)</span>
-                            <span id="external-temp" class="text-base font-bold text-slate-800">29.5 °C</span>
+                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
+                            <span class="text-xs sm:text-sm font-medium text-slate-600">อุณหภูมิอากาศ (Open-Meteo)</span>
+                            <span id="external-temp" class="text-xs sm:text-sm md:text-base font-bold text-slate-800">29.5 °C</span>
                         </div>
-                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
-                            <span class="text-sm font-medium text-slate-600">ความชื้นสัมพัทธ์ในอากาศ</span>
-                            <span id="external-humidity" class="text-base font-bold text-slate-800">72 %</span>
+                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
+                            <span class="text-xs sm:text-sm font-medium text-slate-600">ความชื้นสัมพัทธ์อากาศ</span>
+                            <span id="external-humidity" class="text-xs sm:text-sm md:text-base font-bold text-slate-800">72 %</span>
                         </div>
-                    </div>
-                    <div class="mt-4 text-xxs text-slate-400">
-                        *ระบบดึงปริมาณน้ำฝนเฉลี่ยและอุณหภูมิรายวันล่าสุด เพื่อนำมาวิเคราะห์ความเหมาะสมในการเติบโตของพืชชนิดต่างๆ ร่วมกับสารอาหารในดิน
                     </div>
                 </div>
 
@@ -185,80 +205,83 @@
             <div class="lg:col-span-2 space-y-6">
                 
                 <!-- Main Matching Result Gauge & Spotlight -->
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                    <h2 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+                <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-100">
+                    <h2 class="text-lg sm:text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
                         <i class="fa-solid fa-trophy text-amber-500"></i>
                         พืชที่เหมาะสมที่สุดกับดินบริเวณนี้
                     </h2>
                     
                     <!-- Spotlight Card -->
-                    <div id="spotlight-card" class="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-100/80 flex flex-col md:flex-row items-center justify-between gap-6">
-                        <div class="flex items-center gap-6">
-                            <div id="spotlight-icon-container" class="w-20 h-20 rounded-2xl bg-white shadow-md border border-emerald-200/50 flex items-center justify-center text-4xl">
+                    <div id="spotlight-card" class="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-5 sm:p-6 border border-emerald-100 flex flex-col sm:flex-row items-center justify-between gap-6">
+                        <div class="flex flex-col sm:flex-row items-center text-center sm:text-left gap-4 sm:gap-6 w-full">
+                            <div id="spotlight-icon-container" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white shadow-md border border-emerald-200/50 flex items-center justify-center text-3xl sm:text-4xl shrink-0">
                                 🌾
                             </div>
-                            <div>
-                                <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-600 text-white mb-2">
+                            <div class="space-y-1 w-full sm:w-auto">
+                                <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold bg-emerald-600 text-white">
                                     แนะนำเป็นอันดับ 1
                                 </div>
-                                <h3 id="spotlight-name-th" class="text-2xl font-bold text-slate-900 mb-1">ข้าว (Rice)</h3>
-                                <p id="spotlight-desc" class="text-sm text-slate-600">ดินเหนียวหรือดินร่วนปนเหนียว เก็บกักน้ำได้ดี สารอาหารเหมาะสมในเกณฑ์ดี</p>
+                                <h3 id="spotlight-name-th" class="text-xl sm:text-2xl font-bold text-slate-900">ข้าว (Rice)</h3>
+                                <p id="spotlight-desc" class="text-xs sm:text-sm text-slate-600 leading-normal">ดินเหนียวหรือดินร่วนปนเหนียว เก็บกักน้ำได้ดี สารอาหารเหมาะสมในเกณฑ์ดี</p>
                             </div>
                         </div>
-                        <div class="text-center shrink-0">
-                            <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">ความเหมาะสม</div>
-                            <div id="spotlight-score" class="text-4xl font-extrabold text-emerald-600">95%</div>
-                            <div class="text-xs text-slate-400 mt-1">วิเคราะห์จาก 7 ปัจจัย</div>
+                        <div class="text-center shrink-0 border-t sm:border-t-0 sm:border-l border-slate-200/60 pt-4 sm:pt-0 sm:pl-6 w-full sm:w-auto">
+                            <div class="text-[10px] sm:text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">ความเหมาะสม</div>
+                            <div id="spotlight-score" class="text-3xl sm:text-4xl font-extrabold text-emerald-600">95%</div>
+                            <div class="text-[10px] text-slate-400 mt-1">วิเคราะห์จาก 7 ปัจจัย</div>
                         </div>
                     </div>
 
                     <!-- Comparison Chart -->
                     <div class="mt-8">
-                        <h3 class="text-sm font-bold text-slate-700 mb-4">กราฟเรดาร์เปรียบเทียบสารอาหารปัจจุบัน (เซนเซอร์) VS ค่าอุดมคติของพืชที่เลือก</h3>
-                        <div class="h-80 flex justify-center items-center">
+                        <h3 class="text-xs sm:text-sm font-bold text-slate-700 mb-4">กราฟเรดาร์เปรียบเทียบสารอาหารปัจจุบัน (เซนเซอร์) VS ค่าอุดมคติของพืชที่เลือก</h3>
+                        <!-- Wrapping in a responsive container with relative layout -->
+                        <div class="relative h-64 sm:h-80 md:h-96 w-full flex justify-center items-center">
                             <canvas id="soilComparisonChart"></canvas>
                         </div>
                     </div>
                 </div>
 
                 <!-- 15 Crops Matching List -->
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                    <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
+                <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-100">
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
                         <div>
-                            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <h2 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
                                 <i class="fa-solid fa-list-ol text-teal-600"></i>
                                 ตารางอันดับความเหมาะสมของพืชทั้งหมด (15 ชนิด)
                             </h2>
-                            <p class="text-xs text-slate-500">เรียงลำดับจากพืชที่เหมาะสมที่สุดไปยังพืชที่ต้องปรับปรุงดินมากที่สุด</p>
+                            <p class="text-[10px] sm:text-xs text-slate-500">เรียงลำดับจากพืชที่เหมาะสมที่สุดไปยังพืชที่ต้องปรับปรุงดินมากที่สุด</p>
                         </div>
-                        <!-- Filter tab -->
-                        <div class="flex rounded-lg bg-slate-100 p-0.5 text-xs">
-                            <button id="filter-all" onclick="filterCrops('all')" class="px-3 py-1.5 rounded-md font-medium text-slate-700 bg-white shadow-sm">ทั้งหมด</button>
-                            <button id="filter-high" onclick="filterCrops('high')" class="px-3 py-1.5 rounded-md font-medium text-slate-500 hover:text-slate-900">แนะนำ (>75%)</button>
-                            <button id="filter-low" onclick="filterCrops('low')" class="px-3 py-1.5 rounded-md font-medium text-slate-500 hover:text-slate-900">ต้องปรับปรุงดิน</button>
+                        
+                        <!-- Filter tab - Optimized for mobile tapping -->
+                        <div class="flex rounded-lg bg-slate-100 p-0.5 text-xs self-start sm:self-center overflow-x-auto w-full sm:w-auto">
+                            <button id="filter-all" onclick="filterCrops('all')" class="flex-1 sm:flex-initial px-3 py-1.5 rounded-md font-medium text-slate-700 bg-white shadow-xs transition-colors whitespace-nowrap">ทั้งหมด</button>
+                            <button id="filter-high" onclick="filterCrops('high')" class="flex-1 sm:flex-initial px-3 py-1.5 rounded-md font-medium text-slate-500 hover:text-slate-900 transition-colors whitespace-nowrap">แนะนำ (>75%)</button>
+                            <button id="filter-low" onclick="filterCrops('low')" class="flex-1 sm:flex-initial px-3 py-1.5 rounded-md font-medium text-slate-500 hover:text-slate-900 transition-colors whitespace-nowrap">ต้องบำรุง</button>
                         </div>
                     </div>
 
+                    <!-- ADJUSTED: 1 Column on Mobile, 2 Columns on Screens starting from medium/Tablet size (md:grid-cols-2) -->
                     <div id="crops-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <!-- Dynamic content loaded via JS -->
                     </div>
                 </div>
 
                 <!-- Soil Improvement & Management Recommendation -->
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                    <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-100">
+                    <h2 class="text-base sm:text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
                         <i class="fa-solid fa-hand-holding-droplet text-blue-600"></i>
                         คำแนะนำและแนวทางปรับปรุงดินรายบุคคล
                     </h2>
                     
                     <div class="mb-4">
-                        <label for="crop-selector" class="block text-sm font-semibold text-slate-700 mb-2">เลือกพืชที่คุณต้องการปลูก เพื่อดูคำแนะนำในการเตรียมหน้าดิน:</label>
-                        <select id="crop-selector" onchange="generateSoilAdvice()" class="w-full md:w-80 px-3 py-2 border border-slate-200 rounded-lg text-slate-800 bg-white shadow-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-200">
+                        <label for="crop-selector" class="block text-xs sm:text-sm font-semibold text-slate-700 mb-2">เลือกพืชที่คุณต้องการปลูก เพื่อดูคำแนะนำในการเตรียมหน้าดิน:</label>
+                        <select id="crop-selector" onchange="generateSoilAdvice()" class="w-full sm:w-80 px-3 py-2 border border-slate-200 rounded-lg text-slate-800 bg-white shadow-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-200 text-sm h-[44px]">
                             <!-- Dynamic selector list -->
                         </select>
                     </div>
 
-                    <div id="advice-container" class="p-5 rounded-2xl border border-slate-100 bg-slate-50/50 space-y-4">
+                    <div id="advice-container" class="p-4 sm:p-5 rounded-2xl border border-slate-100 bg-slate-50/50 space-y-4">
                         <!-- Dynamic soil improvement advice here -->
                     </div>
                 </div>
@@ -271,16 +294,18 @@
 
     <!-- Footer -->
     <footer class="bg-white border-t border-slate-100 mt-16 py-8">
-        <div class="max-w-7xl mx-auto px-4 text-center text-slate-400 text-sm">
+        <div class="max-w-7xl mx-auto px-4 text-center text-slate-400 text-xs sm:text-sm">
             <p class="mb-2">© 2026 My Soil Mate Project. All Rights Reserved.</p>
-            <p class="text-xs">โครงงานนวัตกรรมเซนเซอร์วัดสภาพดิน 7 in 1 Modbus RS485 ประสานระบบข้อมูลภูมิอากาศ NASA POWER & Open-Meteo API</p>
+            <p class="text-[10px] sm:text-xs leading-relaxed max-w-xl mx-auto">
+                โครงงานนวัตกรรมเซนเซอร์วัดสภาพดิน 7 in 1 Modbus RS485 ประสานระบบข้อมูลภูมิอากาศ NASA POWER & Open-Meteo API
+            </p>
         </div>
     </footer>
 
-    <!-- Custom Notification/Alert Box -->
-    <div id="notification" class="fixed bottom-5 right-5 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-xl transform translate-y-24 opacity-0 transition-all duration-300 z-50 flex items-center gap-3">
-        <i id="notif-icon" class="fa-solid fa-circle-info text-teal-400"></i>
-        <span id="notif-text">ข้อความแจ้งเตือน</span>
+    <!-- Custom Responsive Notification/Alert Box -->
+    <div id="notification" class="fixed bottom-5 left-1/2 md:left-auto md:right-5 transform -translate-x-1/2 md:translate-x-0 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-3 z-50 transition-all duration-300 translate-y-24 opacity-0 max-w-[90%] w-[320px] justify-center md:justify-start">
+        <i id="notif-icon" class="fa-solid fa-circle-info text-teal-400 shrink-0"></i>
+        <span id="notif-text" class="text-xs sm:text-sm font-medium">ข้อความแจ้งเตือน</span>
     </div>
 
     <script>
@@ -308,6 +333,17 @@
         let soilChart = null;
         let activeFilter = 'all';
 
+        // Internal Soil State representing readings from sensor
+        let soilState = {
+            n: 45,
+            p: 30,
+            k: 80,
+            ph: 6.2,
+            moisture: 35,
+            temp: 28,
+            ec: 450
+        };
+
         // --- Init App ---
         window.onload = function() {
             // Populate crop selector
@@ -319,8 +355,8 @@
                 selector.appendChild(opt);
             });
 
-            // Initial calculation
-            recalculateAndDisplay();
+            // Initial UI Update and Calculation
+            updateSensorDisplay();
         };
 
         // --- Custom Toast Alert Notification ---
@@ -332,6 +368,7 @@
             icon.className = `fa-solid ${iconClass} ${isError ? 'text-red-400' : 'text-teal-400'}`;
             text.textContent = message;
 
+            // Animate popup
             notif.classList.remove('translate-y-24', 'opacity-0');
             
             setTimeout(() => {
@@ -339,37 +376,25 @@
             }, 3000);
         }
 
-        // --- Helper: Randomize Values ---
-        function setRandomSoilValues() {
-            document.getElementById('input-n').value = Math.floor(Math.random() * 100) + 20;
-            document.getElementById('input-p').value = Math.floor(Math.random() * 60) + 10;
-            document.getElementById('input-k').value = Math.floor(Math.random() * 150) + 40;
-            document.getElementById('input-ph').value = (Math.random() * 3 + 4.5).toFixed(1);
-            document.getElementById('input-moisture').value = Math.floor(Math.random() * 60) + 20;
-            document.getElementById('input-temp').value = Math.floor(Math.random() * 15) + 20;
-            document.getElementById('input-ec').value = Math.floor(Math.random() * 1000) + 200;
-
-            updateSensorDisplay();
-            showNotification("สุ่มปรับปรุงสภาพดินตัวอย่างสำเร็จ", "fa-dice");
-        }
-
-        // --- Update Sensor Readout UI & Trigger logic ---
+        // --- Update Sensor Readout UI & Progress Bars (Read-only view) ---
         function updateSensorDisplay() {
-            const n = document.getElementById('input-n').value;
-            const p = document.getElementById('input-p').value;
-            const k = document.getElementById('input-k').value;
-            const ph = document.getElementById('input-ph').value;
-            const moisture = document.getElementById('input-moisture').value;
-            const temp = document.getElementById('input-temp').value;
-            const ec = document.getElementById('input-ec').value;
+            // Set text readouts
+            document.getElementById('val-n').innerText = soilState.n;
+            document.getElementById('val-p').innerText = soilState.p;
+            document.getElementById('val-k').innerText = soilState.k;
+            document.getElementById('val-ph').innerText = soilState.ph.toFixed(1);
+            document.getElementById('val-moisture').innerText = soilState.moisture;
+            document.getElementById('val-temp').innerText = soilState.temp;
+            document.getElementById('val-ec').innerText = soilState.ec;
 
-            document.getElementById('val-n').innerText = n;
-            document.getElementById('val-p').innerText = p;
-            document.getElementById('val-k').innerText = k;
-            document.getElementById('val-ph').innerText = ph;
-            document.getElementById('val-moisture').innerText = moisture;
-            document.getElementById('val-temp').innerText = temp;
-            document.getElementById('val-ec').innerText = ec;
+            // Update visual progress bars smoothly (scaled dynamically based on max value thresholds)
+            document.getElementById('bar-n').style.width = `${Math.min(100, (soilState.n / 150) * 100)}%`;
+            document.getElementById('bar-p').style.width = `${Math.min(100, (soilState.p / 100) * 100)}%`;
+            document.getElementById('bar-k').style.width = `${Math.min(100, (soilState.k / 250) * 100)}%`;
+            document.getElementById('bar-ph').style.width = `${Math.min(100, ((soilState.ph - 3) / 7) * 100)}%`; // mapped from pH range 3-10
+            document.getElementById('bar-moisture').style.width = `${Math.min(100, soilState.moisture)}%`;
+            document.getElementById('bar-temp').style.width = `${Math.min(100, ((soilState.temp - 10) / 35) * 100)}%`; // mapped from Temp range 10-45
+            document.getElementById('bar-ec').style.width = `${Math.min(100, (soilState.ec / 2000) * 100)}%`;
 
             recalculateAndDisplay();
         }
@@ -380,7 +405,7 @@
             const lng = document.getElementById('lng-input').value;
             const apiStatus = document.getElementById('api-status');
 
-            apiStatus.innerHTML = '<span class="text-teal-600 animate-pulse"><i class="fa-solid fa-spinner animate-spin"></i> กำลังเชื่อมต่อข้อมูลดาวเทียม...</span>';
+            apiStatus.innerHTML = '<span class="text-teal-600 animate-pulse font-medium"><i class="fa-solid fa-spinner animate-spin"></i> กำลังเชื่อมต่อดาวเทียม...</span>';
 
             try {
                 // 1. Fetch Open-Meteo for Weather and Temp
@@ -388,15 +413,15 @@
                 const meteoResponse = await fetch(meteoUrl);
                 const meteoData = await meteoResponse.json();
 
-                // 2. Fetch NASA Power (using a reliable endpoint for climatology or last 30 days rain estimates)
+                // 2. Fetch NASA Power
                 const nasaUrl = `https://power.larc.nasa.gov/api/temporal/climatology/point?parameters=PRECTOTCORR,T2M&community=AG&longitude=${lng}&latitude=${lat}&format=JSON`;
                 const nasaResponse = await fetch(nasaUrl);
                 const nasaData = await nasaResponse.json();
 
                 // Extract values or use smart fallbacks
-                let rainVal = 1350; // standard default for tropical zone
+                let rainVal = 1350; 
                 if (nasaData?.properties?.parameter?.PRECTOTCORR) {
-                    const annualRainSum = Object.values(nasaData.properties.parameter.PRECTOTCORR).reduce((a, b) => a + b, 0) * 30; // approx annual scale
+                    const annualRainSum = Object.values(nasaData.properties.parameter.PRECTOTCORR).reduce((a, b) => a + b, 0) * 30; 
                     rainVal = Math.round(annualRainSum || 1350);
                 }
 
@@ -409,26 +434,40 @@
                 document.getElementById('external-temp').innerText = `${currentTemp} °C`;
                 document.getElementById('external-humidity').innerText = `${currentHumidity} %`;
 
-                apiStatus.innerHTML = '<span class="text-emerald-600"><i class="fa-solid fa-circle-check"></i> ดึงข้อมูลจากดาวเทียม NASA & Open-Meteo สำเร็จ</span>';
-                showNotification("เชื่อมโยงข้อมูลดาวเทียมของพื้นที่สำเร็จ", "fa-satellite");
+                apiStatus.innerHTML = '<span class="text-emerald-600 font-medium"><i class="fa-solid fa-circle-check"></i> ดึงข้อมูลสำเร็จ</span>';
+                showNotification("เชื่อมโยงข้อมูลดาวเทียมสำเร็จ", "fa-satellite");
 
                 recalculateAndDisplay();
             } catch (err) {
                 console.error("API error:", err);
-                apiStatus.innerHTML = '<span class="text-red-500"><i class="fa-solid fa-circle-exclamation"></i> การเชื่อมต่อขัดข้อง (ใช้ค่าสถิติมาตรฐาน)</span>';
-                showNotification("ไม่สามารถดึงข้อมูล API ได้ในขณะนี้", "fa-triangle-exclamation", true);
+                apiStatus.innerHTML = '<span class="text-red-500 font-medium"><i class="fa-solid fa-circle-exclamation"></i> ล้มเหลว (ใช้ค่าสถิติมาตรฐาน)</span>';
+                showNotification("ไม่สามารถดึงข้อมูล API ได้ (ใช้ค่ามาตรฐาน)", "fa-triangle-exclamation", true);
             }
+        }
+
+        // --- Helper: Simulate Sensor Readings (Modbus Simulation) ---
+        function setRandomSoilValues() {
+            soilState.n = Math.floor(Math.random() * 100) + 20;
+            soilState.p = Math.floor(Math.random() * 60) + 10;
+            soilState.k = Math.floor(Math.random() * 150) + 40;
+            soilState.ph = parseFloat((Math.random() * 3 + 4.5).toFixed(1));
+            soilState.moisture = Math.floor(Math.random() * 60) + 20;
+            soilState.temp = Math.floor(Math.random() * 15) + 20;
+            soilState.ec = Math.floor(Math.random() * 1000) + 200;
+
+            updateSensorDisplay();
+            showNotification("อัปเดตข้อมูลอ่านค่าดินล่าสุดสำเร็จ", "fa-arrows-rotate");
         }
 
         // --- Core Algorithm: Match & Compare ---
         function recalculateAndDisplay() {
-            const currentN = parseFloat(document.getElementById('input-n').value);
-            const currentP = parseFloat(document.getElementById('input-p').value);
-            const currentK = parseFloat(document.getElementById('input-k').value);
-            const currentPH = parseFloat(document.getElementById('input-ph').value);
-            const currentMoisture = parseFloat(document.getElementById('input-moisture').value);
-            const currentTemp = parseFloat(document.getElementById('input-temp').value);
-            const currentEC = parseFloat(document.getElementById('input-ec').value);
+            const currentN = soilState.n;
+            const currentP = soilState.p;
+            const currentK = soilState.k;
+            const currentPH = soilState.ph;
+            const currentMoisture = soilState.moisture;
+            const currentTemp = soilState.temp;
+            const currentEC = soilState.ec;
 
             // Fetch NASA Rain Value (extracted from HTML string)
             const rainStr = document.getElementById('external-rain').innerText;
@@ -479,14 +518,14 @@
             const spotlightCard = document.getElementById('spotlight-card');
             const scoreDisplay = document.getElementById('spotlight-score');
             if (topCrop.finalScore >= 80) {
-                spotlightCard.className = "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-100 flex flex-col md:flex-row items-center justify-between gap-6";
-                scoreDisplay.className = "text-4xl font-extrabold text-emerald-600";
+                spotlightCard.className = "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-5 sm:p-6 border border-emerald-100/80 flex flex-col sm:flex-row items-center justify-between gap-6";
+                scoreDisplay.className = "text-3xl sm:text-4xl font-extrabold text-emerald-600";
             } else if (topCrop.finalScore >= 60) {
-                spotlightCard.className = "bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-100 flex flex-col md:flex-row items-center justify-between gap-6";
-                scoreDisplay.className = "text-4xl font-extrabold text-amber-600";
+                spotlightCard.className = "bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-5 sm:p-6 border border-amber-100 flex flex-col sm:flex-row items-center justify-between gap-6";
+                scoreDisplay.className = "text-3xl sm:text-4xl font-extrabold text-amber-600";
             } else {
-                spotlightCard.className = "bg-gradient-to-r from-rose-50 to-red-50 rounded-2xl p-6 border border-rose-100 flex flex-col md:flex-row items-center justify-between gap-6";
-                scoreDisplay.className = "text-4xl font-extrabold text-rose-600";
+                spotlightCard.className = "bg-gradient-to-r from-rose-50 to-red-50 rounded-2xl p-5 sm:p-6 border border-rose-100 flex flex-col sm:flex-row items-center justify-between gap-6";
+                scoreDisplay.className = "text-3xl sm:text-4xl font-extrabold text-rose-600";
             }
 
             // Render list based on active filter
@@ -515,7 +554,7 @@
             }
         }
 
-        // --- Render Crop Cards (Ranked & Categorized with badges) ---
+        // Render Crop Cards (Ranked with badges, beautifully structured)
         function renderCropList(crops) {
             const container = document.getElementById('crops-list-container');
             container.innerHTML = '';
@@ -535,22 +574,18 @@
                 if (crop.finalScore < 55) {
                     colorClass = "bg-rose-500";
                     textClass = "text-rose-700 bg-rose-50 border-rose-200";
-                    statusLabel = "ไม่เหมาะสม (ต้องปรับปรุงดิน)";
+                    statusLabel = "ไม่แนะนำ";
                 } else if (crop.finalScore <= 75) {
                     colorClass = "bg-amber-500";
                     textClass = "text-amber-700 bg-amber-50 border-amber-200";
-                    statusLabel = "พอปลูกได้ (ควรบำรุงดิน)";
+                    statusLabel = "พอปลูกได้";
                 }
 
                 const card = document.createElement('div');
-                card.className = "bg-white p-4 rounded-xl border border-slate-100 hover:border-slate-300 hover:shadow-md transition-all flex items-center justify-between gap-4 cursor-pointer relative overflow-hidden group";
+                card.className = "bg-white p-4 rounded-xl border border-slate-100 hover:border-slate-300 hover:shadow-md transition-all flex items-center justify-between gap-4 cursor-pointer relative overflow-hidden group touch-manipulation";
                 card.onclick = () => {
                     document.getElementById('crop-selector').value = crop.id;
-                    const n = parseFloat(document.getElementById('input-n').value);
-                    const p = parseFloat(document.getElementById('input-p').value);
-                    const k = parseFloat(document.getElementById('input-k').value);
-                    const ph = parseFloat(document.getElementById('input-ph').value);
-                    updateSoilComparisonChart(crop.id, n, p, k, ph);
+                    updateSoilComparisonChart(crop.id, soilState.n, soilState.p, soilState.k, soilState.ph);
                     generateSoilAdvice();
                     
                     // Smooth scroll to chart/advice area
@@ -566,16 +601,16 @@
                         <div>
                             <div class="flex items-center gap-1.5 flex-wrap">
                                 <h4 class="font-bold text-slate-900 text-sm group-hover:text-teal-600 transition-colors">${crop.nameTH}</h4>
-                                <span class="text-xxs px-1.5 py-0.5 rounded border ${textClass}">${statusLabel}</span>
+                                <span class="text-[9px] px-1.5 py-0.5 rounded border ${textClass} font-semibold">${statusLabel}</span>
                             </div>
                             <p class="text-xs text-slate-400">${crop.nameEN}</p>
                         </div>
                     </div>
                     <div class="flex flex-col items-end shrink-0">
-                        <span class="px-2.5 py-1 rounded-full text-xs font-bold ${textClass}">
-                            ${crop.finalScore}% แมตช์
+                        <span class="px-2 py-0.5 rounded-full text-xs font-bold ${textClass}">
+                            ${crop.finalScore}%
                         </span>
-                        <div class="w-20 bg-slate-100 h-1.5 rounded-full mt-1.5 overflow-hidden">
+                        <div class="w-16 bg-slate-100 h-1.5 rounded-full mt-1.5 overflow-hidden">
                             <div class="${colorClass} h-full" style="width: ${crop.finalScore}%"></div>
                         </div>
                     </div>
@@ -602,7 +637,7 @@
             buttons.forEach(btn => {
                 const el = document.getElementById(`filter-${btn}`);
                 if (btn === type) {
-                    el.className = "px-3 py-1.5 rounded-md font-medium text-slate-700 bg-white shadow-sm";
+                    el.className = "px-3 py-1.5 rounded-md font-medium text-slate-700 bg-white shadow-xs";
                 } else {
                     el.className = "px-3 py-1.5 rounded-md font-medium text-slate-500 hover:text-slate-900";
                 }
@@ -612,27 +647,27 @@
             recalculateAndDisplay();
         }
 
-        // --- Generate Specific Soil Advice for Selected Crop ---
+        // Generate Specific Soil Advice for Selected Crop
         function generateSoilAdvice() {
             const cropId = document.getElementById('crop-selector').value;
             const crop = cropsData.find(c => c.id === cropId);
             if (!crop) return;
 
-            const n = parseFloat(document.getElementById('input-n').value);
-            const p = parseFloat(document.getElementById('input-p').value);
-            const k = parseFloat(document.getElementById('input-k').value);
-            const ph = parseFloat(document.getElementById('input-ph').value);
+            const n = soilState.n;
+            const p = soilState.p;
+            const k = soilState.k;
+            const ph = soilState.ph;
 
             const adviceContainer = document.getElementById('advice-container');
             adviceContainer.innerHTML = '';
 
             let adviceHTML = `
-                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
                     <div class="flex items-center gap-2">
-                        <span class="text-2xl">${crop.icon}</span>
-                        <h4 class="font-bold text-slate-800 text-base">คู่มือเตรียมดินสำหรับ: ${crop.nameTH} (${crop.nameEN})</h4>
+                        <span class="text-2xl shrink-0">${crop.icon}</span>
+                        <h4 class="font-bold text-slate-800 text-sm sm:text-base">คู่มือเตรียมดินสำหรับ: ${crop.nameTH} (${crop.nameEN})</h4>
                     </div>
-                    <span class="text-xs text-slate-500 font-medium">ค่าอุดมคติ pH: ${crop.minPH}-${crop.maxPH}</span>
+                    <span class="text-xs text-slate-500 font-semibold self-start sm:self-center bg-slate-100 px-2 py-0.5 rounded">ค่าอุดมคติ pH: ${crop.minPH}-${crop.maxPH}</span>
                 </div>
             `;
 
@@ -641,30 +676,30 @@
             if (ph < crop.minPH) {
                 phRecommendation = `
                     <div class="p-4 bg-rose-50 border border-rose-100 rounded-xl flex gap-3">
-                        <div class="text-rose-500 text-lg"><i class="fa-solid fa-circle-chevron-up"></i></div>
+                        <div class="text-rose-500 text-lg shrink-0"><i class="fa-solid fa-circle-chevron-up"></i></div>
                         <div>
-                            <h5 class="font-bold text-rose-800 text-sm">ดินมีความเป็นกรดเกินไป (pH ${ph} < ${crop.minPH})</h5>
-                            <p class="text-xs text-slate-600 mt-1">แนะนำให้เติม <strong>"ปูนขาว" (โดโลไมท์ หรือ คาลไซต์)</strong> อัตรา 100-200 กรัม/ตร.ม. เพื่อลดกรด และพักหน้าดินทิ้งไว้ 1-2 สัปดาห์ก่อนปลูก</p>
+                            <h5 class="font-bold text-rose-800 text-xs sm:text-sm">ดินมีความเป็นกรดเกินไป (pH ${ph} < ${crop.minPH})</h5>
+                            <p class="text-xs text-slate-600 mt-1 leading-relaxed">แนะนำให้เติม <strong>"ปูนขาว" (โดโลไมท์ หรือ คาลไซต์)</strong> อัตรา 100-200 กรัม/ตร.ม. เพื่อลดกรด และพักหน้าดินทิ้งไว้ 1-2 สัปดาห์ก่อนปลูก</p>
                         </div>
                     </div>
                 `;
             } else if (ph > crop.maxPH) {
                 phRecommendation = `
                     <div class="p-4 bg-amber-50 border border-amber-100 rounded-xl flex gap-3">
-                        <div class="text-amber-500 text-lg"><i class="fa-solid fa-circle-chevron-down"></i></div>
+                        <div class="text-amber-500 text-lg shrink-0"><i class="fa-solid fa-circle-chevron-down"></i></div>
                         <div>
-                            <h5 class="font-bold text-amber-800 text-sm">ดินมีความเป็นด่างสูงเกินไป (pH ${ph} > ${crop.maxPH})</h5>
-                            <p class="text-xs text-slate-600 mt-1">แนะนำให้ผสม <strong>"ปุ๋ยหมักอินทรีย์" หรือเติม "แอมโมเนียมซัลเฟต"</strong> เพื่อเพิ่มอินทรีย์ที่มีฤทธิ์กรดอ่อนๆ ปรับระดับดินให้สมดุล</p>
+                            <h5 class="font-bold text-amber-800 text-xs sm:text-sm">ดินมีความเป็นด่างสูงเกินไป (pH ${ph} > ${crop.maxPH})</h5>
+                            <p class="text-xs text-slate-600 mt-1 leading-relaxed">แนะนำให้ผสม <strong>"ปุ๋ยหมักอินทรีย์" หรือเติม "แอมโมเนียมซัลเฟต"</strong> เพื่อเพิ่มอินทรีย์ที่มีฤทธิ์กรดอ่อนๆ ปรับระดับดินให้สมดุล</p>
                         </div>
                     </div>
                 `;
             } else {
                 phRecommendation = `
                     <div class="p-4 bg-emerald-50 border border-emerald-100 rounded-xl flex gap-3">
-                        <div class="text-emerald-500 text-lg"><i class="fa-solid fa-circle-check"></i></div>
+                        <div class="text-emerald-500 text-lg shrink-0"><i class="fa-solid fa-circle-check"></i></div>
                         <div>
-                            <h5 class="font-bold text-emerald-800 text-sm">ค่ากรด-ด่างดินยอดเยี่ยมพอดีแล้ว! (pH ${ph})</h5>
-                            <p class="text-xs text-slate-600 mt-1">เหมาะสมมาก ไม่จำเป็นต้องปรับโครงสร้าง pH สำหรับ ${crop.nameTH} รักษาหน้าดินด้วยปุ๋ยอินทรีย์สม่ำเสมอ</p>
+                            <h5 class="font-bold text-emerald-800 text-xs sm:text-sm">ค่ากรด-ด่างดินยอดเยี่ยมพอดีแล้ว! (pH ${ph})</h5>
+                            <p class="text-xs text-slate-600 mt-1 leading-relaxed">เหมาะสมมาก ไม่จำเป็นต้องปรับโครงสร้าง pH สำหรับ ${crop.nameTH} รักษาหน้าดินด้วยปุ๋ยอินทรีย์สม่ำเสมอ</p>
                         </div>
                     </div>
                 `;
@@ -680,10 +715,10 @@
             if (deficitList.length > 0) {
                 npkRecommendation = `
                     <div class="p-4 bg-blue-50 border border-blue-100 rounded-xl flex gap-3">
-                        <div class="text-blue-500 text-lg"><i class="fa-solid fa-flask"></i></div>
+                        <div class="text-blue-500 text-lg shrink-0"><i class="fa-solid fa-flask"></i></div>
                         <div>
-                            <h5 class="font-bold text-blue-800 text-sm">คำแนะนำการเติมสารอาหารปุ๋ย</h5>
-                            <ul class="list-disc pl-4 text-xs text-slate-600 mt-2 space-y-2">
+                            <h5 class="font-bold text-blue-800 text-xs sm:text-sm">คำแนะนำการเติมสารอาหารปุ๋ย</h5>
+                            <ul class="list-disc pl-4 text-xs text-slate-600 mt-2 space-y-2 leading-relaxed">
                                 ${deficitList.map(item => `<li>${item}</li>`).join('')}
                             </ul>
                         </div>
@@ -692,10 +727,10 @@
             } else {
                 npkRecommendation = `
                     <div class="p-4 bg-emerald-50 border border-emerald-100 rounded-xl flex gap-3">
-                        <div class="text-emerald-500 text-lg"><i class="fa-solid fa-champagne-glasses"></i></div>
+                        <div class="text-emerald-500 text-lg shrink-0"><i class="fa-solid fa-champagne-glasses"></i></div>
                         <div>
-                            <h5 class="font-bold text-emerald-800 text-sm">ธาตุอาหารดินสมบูรณ์ครบถ้วน!</h5>
-                            <p class="text-xs text-slate-600 mt-1">ปริมาณ ไนโตรเจน, ฟอสฟอรัส และ โพแทสเซียม เพียงพออย่างดีเยี่ยมสำหรับการเติบโตขั้นแรก</p>
+                            <h5 class="font-bold text-emerald-800 text-xs sm:text-sm">ธาตุอาหารดินสมบูรณ์ครบถ้วน!</h5>
+                            <p class="text-xs text-slate-600 mt-1 leading-relaxed">ปริมาณ ไนโตรเจน, ฟอสฟอรัส และ โพแทสเซียม เพียงพออย่างดีเยี่ยมสำหรับการเติบโตขั้นแรก</p>
                         </div>
                     </div>
                 `;
@@ -706,10 +741,10 @@
             const tempStr = document.getElementById('external-temp').innerText;
 
             let climateAnalysis = `
-                <div class="p-4 bg-slate-100/80 rounded-xl text-xs text-slate-600">
+                <div class="p-4 bg-slate-100 border border-slate-200/50 rounded-xl text-xs text-slate-600 leading-relaxed">
                     <h5 class="font-semibold text-slate-700 mb-1"><i class="fa-solid fa-circle-nodes text-slate-500 mr-1"></i> ความเข้ากันได้ด้านอากาศและนิเวศวิทยา:</h5>
                     <p>ระบบตรวจสอบพื้นที่ของคุณร่วมกับประวัติฝนของดาวเทียมพบว่าปริมาณน้ำฝนอยู่ที่ ${rainStr} และอุณหภูมิอากาศปัจจุบัน ${tempStr} ซึ่งเหมาะแก่สภาพอากาศของ ${crop.nameTH} เป็นอันดี</p>
-                    <p class="mt-2 font-medium text-teal-700">คำแนะนำเฉพาะพืช: ${crop.advice}</p>
+                    <p class="mt-2 font-semibold text-teal-700">คำแนะนำเฉพาะพืช: ${crop.advice}</p>
                 </div>
             `;
 
@@ -717,12 +752,11 @@
             adviceContainer.innerHTML = adviceHTML;
         }
 
-        // --- Render comparison charts using Chart.js (Radar Chart Reverted) ---
+        // --- Instantiating responsive Radar Chart ---
         function updateSoilComparisonChart(cropId, currentN, currentP, currentK, currentPH) {
             const crop = cropsData.find(c => c.id === cropId);
             if (!crop) return;
 
-            // Ideal average values
             const avgN = (crop.minN + crop.maxN) / 2;
             const avgP = (crop.minP + crop.maxP) / 2;
             const avgK = (crop.minK + crop.maxK) / 2;
@@ -736,7 +770,7 @@
                     {
                         label: 'ค่าปัจจุบันจากเซนเซอร์',
                         data: [currentN, currentP, currentK, currentPH_scaled],
-                        backgroundColor: 'rgba(79, 70, 229, 0.25)',
+                        backgroundColor: 'rgba(79, 70, 229, 0.20)',
                         borderColor: 'rgb(79, 70, 229)',
                         borderWidth: 2,
                         pointBackgroundColor: 'rgb(79, 70, 229)',
@@ -744,7 +778,7 @@
                     {
                         label: `เป้าหมายอุดมคติของ ${crop.nameTH}`,
                         data: [avgN, avgP, avgK, avgPH_scaled],
-                        backgroundColor: 'rgba(13, 148, 136, 0.25)',
+                        backgroundColor: 'rgba(13, 148, 136, 0.20)',
                         borderColor: 'rgb(13, 148, 136)',
                         borderWidth: 2,
                         pointBackgroundColor: 'rgb(13, 148, 136)',
@@ -769,8 +803,10 @@
                             labels: {
                                 font: {
                                     family: 'Sarabun',
-                                    size: 11
-                                }
+                                    size: window.innerWidth < 640 ? 10 : 12
+                                },
+                                boxWidth: 15,
+                                padding: 15
                             }
                         },
                         tooltip: {
@@ -797,14 +833,14 @@
                                 backdropColor: 'transparent',
                                 font: {
                                     family: 'Sarabun',
-                                    size: 10
+                                    size: 9
                                 }
                             },
                             pointLabels: {
                                 font: {
                                     family: 'Sarabun',
                                     weight: 'bold',
-                                    size: 11
+                                    size: window.innerWidth < 640 ? 10 : 12
                                 }
                             }
                         }
