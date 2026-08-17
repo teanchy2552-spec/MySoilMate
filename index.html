@@ -36,13 +36,13 @@
                     </div>
                     <div>
                         <span class="font-bold text-base sm:text-lg tracking-tight text-slate-900 block leading-tight">My Soil Mate</span>
-                        <span class="text-[10px] sm:text-xs text-slate-500">เครื่องมือตรวจวัดสภาพดินอัจฉริยะ 7-in-1</span>
+                        <span class="text-[10px] sm:text-xs text-slate-500">เครื่องมือตรวจวัดสภาพดินอัจฉริยะ 7-in-1 (Google Sheet Connected)</span>
                     </div>
                 </div>
                 <div class="flex items-center space-x-2 shrink-0">
                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
                         <span class="w-1.5 h-1.5 mr-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span class="hidden xs:inline">Modbus </span>Connected
+                        <span class="hidden xs:inline">Google Sheets </span>Live Sync
                     </span>
                 </div>
             </div>
@@ -57,188 +57,188 @@
             <div class="space-y-2">
                 <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 leading-tight">วิเคราะห์ดินเพื่อการเพาะปลูกที่แม่นยำ</h1>
                 <p class="text-sm text-slate-500 max-w-2xl leading-relaxed">
-                    ผสานข้อมูลจากเซนเซอร์ตรวจวัดดินแบบ 7-in-1 (TH-EC-PH-NPK) เข้ากับข้อมูลสภาพภูมิอากาศระดับโลกจาก NASA POWER และ Open-Meteo เพื่อหาพืชที่เหมาะสมที่สุดสำหรับคุณ
+                    เชื่อมโยงข้อมูลเซนเซอร์ 7-in-1 จาก Google Sheet แบบเรียลไทม์ เข้ากับข้อมูลสภาพภูมิอากาศดาวเทียม NASA POWER และ Open-Meteo เพื่อคำนวณประมวลผลพืชที่เหมาะสมที่สุด
                 </p>
             </div>
             
-            <!-- Quick GPS Coordinates Setup -->
-            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/60 shrink-0 w-full lg:w-auto">
-                <h3 class="text-xs sm:text-sm font-semibold text-slate-700 mb-2"><i class="fa-solid fa-location-dot text-teal-600 mr-1"></i> พิกัดพื้นที่เพาะปลูก</h3>
-                <div class="flex flex-col sm:flex-row gap-2">
-                    <div class="flex gap-2 w-full sm:w-auto">
-                        <input id="lat-input" type="number" step="0.0001" value="13.7563" class="w-full sm:w-24 px-3 py-2 text-sm border border-slate-200 rounded-lg text-center bg-white" placeholder="Latitude">
-                        <input id="lng-input" type="number" step="0.0001" value="100.5018" class="w-full sm:w-24 px-3 py-2 text-sm border border-slate-200 rounded-lg text-center bg-white" placeholder="Longitude">
+            <!-- Google Sheet & GPS Integration Setup -->
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/60 shrink-0 w-full lg:w-auto space-y-3">
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <h3 class="text-xs sm:text-sm font-semibold text-slate-700"><i class="fa-solid fa-file-csv text-emerald-600 mr-1"></i> Google Sheet ID</h3>
+                        <span id="sheet-sync-time" class="text-[10px] text-slate-400">ยังไม่อัปเดต</span>
                     </div>
-                    <button onclick="fetchExternalData()" class="w-full sm:w-auto px-4 py-2 bg-teal-600 hover:bg-teal-700 active:scale-95 text-white text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-sm touch-manipulation min-h-[40px]">
-                        <i class="fa-solid fa-rotate"></i> ดึงข้อมูล API
-                    </button>
+                    <div class="flex gap-2">
+                        <input id="sheet-id-input" type="text" value="1Pi_9Xc8nFLTlymkq0nSXVgCFvupmdOFW8VlM3ZTikUI" class="w-full sm:w-64 px-3 py-1.5 text-xs border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-teal-500" placeholder="Google Sheet ID">
+                        <button onclick="syncAllData()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-xs touch-manipulation whitespace-nowrap">
+                            <i class="fa-solid fa-rotate"></i> ซิงค์ Google Sheet
+                        </button>
+                    </div>
                 </div>
-                <div id="api-status" class="text-[10px] text-slate-400 mt-2 text-center sm:text-right">ข้อมูลจำลองท้องถิ่น (กดปุ่มเพื่อดึงข้อมูลจริง)</div>
+
+                <div class="pt-2 border-t border-slate-200/60">
+                    <h3 class="text-xs font-semibold text-slate-700 mb-1.5"><i class="fa-solid fa-location-dot text-teal-600 mr-1"></i> พิกัดแปลงปลูก (สำหรับ NASA & Open-Meteo)</h3>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <div class="flex gap-2 w-full sm:w-auto">
+                            <input id="lat-input" type="number" step="0.0001" value="13.7563" class="w-full sm:w-24 px-3 py-1.5 text-xs border border-slate-200 rounded-lg text-center bg-white" placeholder="Lat">
+                            <input id="lng-input" type="number" step="0.0001" value="100.5018" class="w-full sm:w-24 px-3 py-1.5 text-xs border border-slate-200 rounded-lg text-center bg-white" placeholder="Lng">
+                        </div>
+                        <button onclick="fetchExternalData()" class="w-full sm:w-auto px-3 py-1.5 bg-teal-600 hover:bg-teal-700 active:scale-95 text-white text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-xs touch-manipulation min-h-[32px] whitespace-nowrap">
+                            <i class="fa-solid fa-cloud-sun"></i> ดึงอากาศ NASA
+                        </button>
+                    </div>
+                </div>
+                <div id="api-status" class="text-[10px] text-slate-400 mt-1 text-center sm:text-right">กดปุ่มซิงค์เพื่อดึงข้อมูลจาก Google Sheet และประมวลผลสภาพอากาศ</div>
             </div>
         </div>
 
         <!-- Adaptive Grid Layout for all screen sizes -->
         <div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
             
-            <!-- COLUMN 1: Sensor Readings (Display Only) -->
+            <!-- COLUMN 1: Sensor Readings & Live External Weather Data -->
             <div class="lg:col-span-1 space-y-6">
                 
-                <!-- Sensor Simulation Controls -->
+                <!-- Best Crop Spotlight Card -->
+                <div id="spotlight-card" class="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-5 sm:p-6 border border-emerald-100/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        <div id="spotlight-icon-container" class="text-4xl sm:text-5xl shrink-0 p-3 bg-white rounded-2xl shadow-xs">🌾</div>
+                        <div>
+                            <span class="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md">พืชที่เหมาะสมที่สุด</span>
+                            <h3 id="spotlight-name-th" class="font-bold text-slate-900 text-base sm:text-lg mt-1">ข้าว (Rice)</h3>
+                            <p id="spotlight-desc" class="text-xs text-slate-500 mt-0.5 leading-relaxed">กำลังคำนวณข้อมูล...</p>
+                        </div>
+                    </div>
+                    <div class="text-center sm:text-right shrink-0 border-t sm:border-t-0 pt-3 sm:pt-0 w-full sm:w-auto border-emerald-100">
+                        <div class="text-[10px] text-slate-400 uppercase font-semibold">คะแนนความเหมาะสม</div>
+                        <div id="spotlight-score" class="text-3xl sm:text-4xl font-extrabold text-emerald-600">--%</div>
+                    </div>
+                </div>
+
+                <!-- Weather Data Cards (NASA POWER & Open-Meteo) -->
+                <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-100">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                        <i class="fa-solid fa-cloud-sun-rain text-teal-600"></i> ข้อมูลสภาพอากาศ (NASA POWER & Open-Meteo)
+                    </h3>
+                    <div class="grid grid-cols-3 gap-3 text-center">
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <span class="text-[10px] text-slate-500 block">ปริมาณฝนสะสม</span>
+                            <span id="external-rain" class="text-xs sm:text-sm font-bold text-slate-800 mt-1 block">-- mm/ปี</span>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <span class="text-[10px] text-slate-500 block">อุณหภูมิอากาศ</span>
+                            <span id="external-temp" class="text-xs sm:text-sm font-bold text-slate-800 mt-1 block">-- °C</span>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <span class="text-[10px] text-slate-500 block">ความชื้นอากาศ</span>
+                            <span id="external-humidity" class="text-xs sm:text-sm font-bold text-slate-800 mt-1 block">-- %</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sensor Simulation & Readout Controls -->
                 <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-100">
                     <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
                         <h2 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
                             <i class="fa-solid fa-square-poll-vertical text-indigo-600"></i>
                             ค่าตรวจวัดจากเซนเซอร์ 7-in-1
                         </h2>
-                        <button onclick="setRandomSoilValues()" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold active:scale-95 transition-transform touch-manipulation px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 rounded-lg flex items-center gap-1">
-                            <i class="fa-solid fa-arrows-rotate"></i> ดึงค่าล่าสุด
-                        </button>
-                    </div>
-
-                    <!-- Sensor Visual Displays (Completely Read-only) -->
-                    <div class="space-y-4">
-                        <!-- Nitrogen (N) -->
-                        <div class="bg-slate-50/50 p-3.5 rounded-xl border border-slate-100">
-                            <div class="flex justify-between text-xs sm:text-sm mb-2">
-                                <span class="font-medium text-slate-700">ไนโตรเจน (N)</span>
-                                <span class="font-bold text-indigo-600"><span id="val-n">45</span> mg/kg</span>
-                            </div>
-                            <div class="w-full bg-slate-200/70 h-2 rounded-full overflow-hidden">
-                                <div id="bar-n" class="bg-indigo-600 h-full transition-all duration-500 ease-out" style="width: 30%"></div>
-                            </div>
-                        </div>
-
-                        <!-- Phosphorus (P) -->
-                        <div class="bg-slate-50/50 p-3.5 rounded-xl border border-slate-100">
-                            <div class="flex justify-between text-xs sm:text-sm mb-2">
-                                <span class="font-medium text-slate-700">ฟอสฟอรัส (P)</span>
-                                <span class="font-bold text-indigo-600"><span id="val-p">30</span> mg/kg</span>
-                            </div>
-                            <div class="w-full bg-slate-200/70 h-2 rounded-full overflow-hidden">
-                                <div id="bar-p" class="bg-indigo-500 h-full transition-all duration-500 ease-out" style="width: 30%"></div>
-                            </div>
-                        </div>
-
-                        <!-- Potassium (K) -->
-                        <div class="bg-slate-50/50 p-3.5 rounded-xl border border-slate-100">
-                            <div class="flex justify-between text-xs sm:text-sm mb-2">
-                                <span class="font-medium text-slate-700">โพแทสเซียม (K)</span>
-                                <span class="font-bold text-indigo-600"><span id="val-k">80</span> mg/kg</span>
-                            </div>
-                            <div class="w-full bg-slate-200/70 h-2 rounded-full overflow-hidden">
-                                <div id="bar-k" class="bg-indigo-400 h-full transition-all duration-500 ease-out" style="width: 32%"></div>
-                            </div>
-                        </div>
-
-                        <!-- pH Value -->
-                        <div class="bg-slate-50/50 p-3.5 rounded-xl border border-slate-100">
-                            <div class="flex justify-between text-xs sm:text-sm mb-2">
-                                <span class="font-medium text-slate-700">ความเป็นกรด-ด่าง (pH)</span>
-                                <span class="font-bold text-teal-600"><span id="val-ph">6.2</span> pH</span>
-                            </div>
-                            <div class="w-full bg-slate-200/70 h-2 rounded-full overflow-hidden">
-                                <div id="bar-ph" class="bg-teal-500 h-full transition-all duration-500 ease-out" style="width: 45%"></div>
-                            </div>
-                        </div>
-
-                        <!-- Soil Moisture -->
-                        <div class="bg-slate-50/50 p-3.5 rounded-xl border border-slate-100">
-                            <div class="flex justify-between text-xs sm:text-sm mb-2">
-                                <span class="font-medium text-slate-700">ความชื้นดิน (Moisture)</span>
-                                <span class="font-bold text-blue-600"><span id="val-moisture">35</span> %</span>
-                            </div>
-                            <div class="w-full bg-slate-200/70 h-2 rounded-full overflow-hidden">
-                                <div id="bar-moisture" class="bg-blue-500 h-full transition-all duration-500 ease-out" style="width: 35%"></div>
-                            </div>
-                        </div>
-
-                        <!-- Temperature -->
-                        <div class="bg-slate-50/50 p-3.5 rounded-xl border border-slate-100">
-                            <div class="flex justify-between text-xs sm:text-sm mb-2">
-                                <span class="font-medium text-slate-700">อุณหภูมิดิน (Temp)</span>
-                                <span class="font-bold text-amber-600"><span id="val-temp">28</span> °C</span>
-                            </div>
-                            <div class="w-full bg-slate-200/70 h-2 rounded-full overflow-hidden">
-                                <div id="bar-temp" class="bg-amber-500 h-full transition-all duration-500 ease-out" style="width: 51%"></div>
-                            </div>
-                        </div>
-
-                        <!-- Electrical Conductivity (EC) -->
-                        <div class="bg-slate-50/50 p-3.5 rounded-xl border border-slate-100">
-                            <div class="flex justify-between text-xs sm:text-sm mb-2">
-                                <span class="font-medium text-slate-700">ค่านำไฟฟ้าดิน (EC)</span>
-                                <span class="font-bold text-emerald-600"><span id="val-ec">450</span> us/cm</span>
-                            </div>
-                            <div class="w-full bg-slate-200/70 h-2 rounded-full overflow-hidden">
-                                <div id="bar-ec" class="bg-emerald-500 h-full transition-all duration-500 ease-out" style="width: 22%"></div>
-                            </div>
+                        <div class="flex gap-1.5">
+                            <button onclick="syncAllData()" title="ดึงข้อมูลจาก Google Sheet" class="text-xs text-emerald-700 hover:text-emerald-800 font-semibold active:scale-95 transition-transform touch-manipulation px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 rounded-lg flex items-center gap-1">
+                                <i class="fa-solid fa-file-csv"></i> ซิงค์ Google Sheet
+                            </button>
                         </div>
                     </div>
-                </div>
 
-                <!-- API Weather & Satellite Card -->
-                <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-100">
-                    <h2 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2 mb-4">
-                        <i class="fa-solid fa-cloud-sun text-amber-500"></i>
-                        ข้อมูลภูมิอากาศภายนอก
-                    </h2>
-                    
-                    <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-3">
-                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
-                            <span class="text-xs sm:text-sm font-medium text-slate-600">ปริมาณฝนรายปี (NASA)</span>
-                            <span id="external-rain" class="text-xs sm:text-sm md:text-base font-bold text-slate-800">1,250 mm</span>
+                    <!-- 7-in-1 Soil Sensor Metric Displays -->
+                    <div class="space-y-3.5">
+                        <!-- N -->
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold mb-1">
+                                <span class="text-slate-600">ไนโตรเจน (N)</span>
+                                <span class="text-slate-900"><span id="val-n">0</span> mg/kg</span>
+                            </div>
+                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                <div id="bar-n" class="bg-emerald-500 h-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
                         </div>
-                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
-                            <span class="text-xs sm:text-sm font-medium text-slate-600">อุณหภูมิอากาศ (Open-Meteo)</span>
-                            <span id="external-temp" class="text-xs sm:text-sm md:text-base font-bold text-slate-800">29.5 °C</span>
+                        <!-- P -->
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold mb-1">
+                                <span class="text-slate-600">ฟอสฟอรัส (P)</span>
+                                <span class="text-slate-900"><span id="val-p">0</span> mg/kg</span>
+                            </div>
+                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                <div id="bar-p" class="bg-teal-500 h-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
                         </div>
-                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
-                            <span class="text-xs sm:text-sm font-medium text-slate-600">ความชื้นสัมพัทธ์อากาศ</span>
-                            <span id="external-humidity" class="text-xs sm:text-sm md:text-base font-bold text-slate-800">72 %</span>
+                        <!-- K -->
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold mb-1">
+                                <span class="text-slate-600">โพแทสเซียม (K)</span>
+                                <span class="text-slate-900"><span id="val-k">0</span> mg/kg</span>
+                            </div>
+                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                <div id="bar-k" class="bg-indigo-500 h-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <!-- pH -->
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold mb-1">
+                                <span class="text-slate-600">ความเป็นกรด-ด่าง (pH)</span>
+                                <span class="text-slate-900"><span id="val-ph">0.0</span> pH</span>
+                            </div>
+                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                <div id="bar-ph" class="bg-amber-500 h-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <!-- Moisture -->
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold mb-1">
+                                <span class="text-slate-600">ความชื้นในดิน (Moisture)</span>
+                                <span class="text-slate-900"><span id="val-moisture">0</span> %</span>
+                            </div>
+                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                <div id="bar-moisture" class="bg-blue-500 h-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <!-- Temp -->
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold mb-1">
+                                <span class="text-slate-600">อุณหภูมิดิน (Temperature)</span>
+                                <span class="text-slate-900"><span id="val-temp">0</span> °C</span>
+                            </div>
+                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                <div id="bar-temp" class="bg-orange-500 h-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <!-- EC -->
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold mb-1">
+                                <span class="text-slate-600">การนำไฟฟ้า (EC)</span>
+                                <span class="text-slate-900"><span id="val-ec">0</span> us/cm</span>
+                            </div>
+                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                <div id="bar-ec" class="bg-purple-500 h-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
             </div>
 
-            <!-- COLUMN 2 & 3: Results, Comparisons and Recommendations -->
+            <!-- COLUMN 2 & 3: Comparison Chart, 15 Crops List, Soil Advice -->
             <div class="lg:col-span-2 space-y-6">
-                
-                <!-- Main Matching Result Gauge & Spotlight -->
-                <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-100">
-                    <h2 class="text-lg sm:text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                        <i class="fa-solid fa-trophy text-amber-500"></i>
-                        พืชที่เหมาะสมที่สุดกับดินบริเวณนี้
-                    </h2>
-                    
-                    <!-- Spotlight Card -->
-                    <div id="spotlight-card" class="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-5 sm:p-6 border border-emerald-100 flex flex-col sm:flex-row items-center justify-between gap-6">
-                        <div class="flex flex-col sm:flex-row items-center text-center sm:text-left gap-4 sm:gap-6 w-full">
-                            <div id="spotlight-icon-container" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white shadow-md border border-emerald-200/50 flex items-center justify-center text-3xl sm:text-4xl shrink-0">
-                                🌾
-                            </div>
-                            <div class="space-y-1 w-full sm:w-auto">
-                                <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold bg-emerald-600 text-white">
-                                    แนะนำเป็นอันดับ 1
-                                </div>
-                                <h3 id="spotlight-name-th" class="text-xl sm:text-2xl font-bold text-slate-900">ข้าว (Rice)</h3>
-                                <p id="spotlight-desc" class="text-xs sm:text-sm text-slate-600 leading-normal">ดินเหนียวหรือดินร่วนปนเหนียว เก็บกักน้ำได้ดี สารอาหารเหมาะสมในเกณฑ์ดี</p>
-                            </div>
-                        </div>
-                        <div class="text-center shrink-0 border-t sm:border-t-0 sm:border-l border-slate-200/60 pt-4 sm:pt-0 sm:pl-6 w-full sm:w-auto">
-                            <div class="text-[10px] sm:text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">ความเหมาะสม</div>
-                            <div id="spotlight-score" class="text-3xl sm:text-4xl font-extrabold text-emerald-600">95%</div>
-                            <div class="text-[10px] text-slate-400 mt-1">วิเคราะห์จาก 7 ปัจจัย</div>
-                        </div>
-                    </div>
 
-                    <!-- Comparison Chart -->
-                    <div class="mt-8">
-                        <h3 class="text-xs sm:text-sm font-bold text-slate-700 mb-4">กราฟเรดาร์เปรียบเทียบสารอาหารปัจจุบัน (เซนเซอร์) VS ค่าอุดมคติของพืชที่เลือก</h3>
-                        <!-- Wrapping in a responsive container with relative layout -->
-                        <div class="relative h-64 sm:h-80 md:h-96 w-full flex justify-center items-center">
-                            <canvas id="soilComparisonChart"></canvas>
-                        </div>
+                <!-- Comparison Chart -->
+                <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-100">
+                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                        <h2 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-radar text-teal-600"></i>
+                            กราฟเรดาร์เปรียบเทียบสารอาหารปัจจุบัน (เซนเซอร์) VS ค่าอุดมคติของพืชที่เลือก
+                        </h2>
+                    </div>
+                    <div class="relative h-64 sm:h-80 md:h-96 w-full flex justify-center items-center">
+                        <canvas id="soilComparisonChart"></canvas>
                     </div>
                 </div>
 
@@ -261,7 +261,6 @@
                         </div>
                     </div>
 
-                    <!-- ADJUSTED: 1 Column on Mobile, 2 Columns on Screens starting from medium/Tablet size (md:grid-cols-2) -->
                     <div id="crops-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <!-- Dynamic content loaded via JS -->
                     </div>
@@ -355,9 +354,116 @@
                 selector.appendChild(opt);
             });
 
-            // Initial UI Update and Calculation
-            updateSensorDisplay();
+            // Initial UI Update and Calculation with Google Sheet Fetch
+            syncAllData();
         };
+
+        // --- Google Sheets Data Extraction ---
+        async function fetchGoogleSheetData() {
+            const sheetId = document.getElementById('sheet-id-input').value.trim() || '1Pi_9Xc8nFLTlymkq0nSXVgCFvupmdOFW8VlM3ZTikUI';
+            const apiStatus = document.getElementById('api-status');
+            const syncTime = document.getElementById('sheet-sync-time');
+
+            apiStatus.innerHTML = '<span class="text-emerald-600 animate-pulse font-medium"><i class="fa-solid fa-spinner animate-spin"></i> กำลังเชื่อมต่อ Google Sheet...</span>';
+
+            // Google Sheets Visualization Query URL (returns JSON format)
+            const gvizUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
+
+            try {
+                const response = await fetch(gvizUrl);
+                const text = await response.text();
+                
+                // Parse GViz response string format: google.visualization.Query.setResponse({...});
+                const jsonMatch = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);/);
+                if (!jsonMatch || !jsonMatch[1]) {
+                    throw new Error("รูปแบบข้อมูล Google Sheet ไม่ถูกต้องหรือชีตไม่ได้เปิดเป็นสาธารณะ");
+                }
+
+                const json = JSON.parse(jsonMatch[1]);
+                const table = json.table;
+                if (!table || !table.rows || table.rows.length === 0) {
+                    throw new Error("ไม่พบข้อมูลแถวใน Google Sheet");
+                }
+
+                // Extract column names
+                const headers = table.cols.map(c => (c.label || c.id || '').toString().toLowerCase());
+                
+                // Get the last row (latest sensor data log)
+                const lastRow = table.rows[table.rows.length - 1].c;
+                const getRowVal = (index) => {
+                    if (index === -1 || !lastRow[index]) return null;
+                    return lastRow[index].v !== undefined ? lastRow[index].v : lastRow[index].f;
+                };
+
+                // Helper to find column index by keyword search
+                const findColIndex = (keywords) => {
+                    return headers.findIndex(h => keywords.some(k => h.includes(k)));
+                };
+
+                // Map header names dynamically or fallback to positional columns
+                const idxN = findColIndex(['n', 'nitrogen', 'ไนโตรเจน']);
+                const idxP = findColIndex(['p', 'phosphorus', 'ฟอสฟอรัส']);
+                const idxK = findColIndex(['k', 'potassium', 'โพแทสเซียม']);
+                const idxPH = findColIndex(['ph', 'กรด']);
+                const idxMoisture = findColIndex(['moisture', 'humidity', 'ความชื้น']);
+                const idxTemp = findColIndex(['temp', 'temperature', 'อุณหภูมิ']);
+                const idxEC = findColIndex(['ec', 'นำไฟฟ้า']);
+                const idxLat = findColIndex(['lat', 'latitude', 'พิกัดลาติตูด']);
+                const idxLng = findColIndex(['lng', 'lon', 'longitude', 'พิกัดลองจิจูด']);
+
+                // Parse soil readings (use row values if found, fallback to sequential indices if not found)
+                const valN = parseFloat(getRowVal(idxN !== -1 ? idxN : 1)) || 45;
+                const valP = parseFloat(getRowVal(idxP !== -1 ? idxP : 2)) || 30;
+                const valK = parseFloat(getRowVal(idxK !== -1 ? idxK : 3)) || 80;
+                const valPH = parseFloat(getRowVal(idxPH !== -1 ? idxPH : 4)) || 6.2;
+                const valMoisture = parseFloat(getRowVal(idxMoisture !== -1 ? idxMoisture : 5)) || 35;
+                const valTemp = parseFloat(getRowVal(idxTemp !== -1 ? idxTemp : 6)) || 28;
+                const valEC = parseFloat(getRowVal(idxEC !== -1 ? idxEC : 7)) || 450;
+
+                // Check for Lat/Lng coordinates in sheet
+                const sheetLat = parseFloat(getRowVal(idxLat));
+                const sheetLng = parseFloat(getRowVal(idxLng));
+
+                if (!isNaN(sheetLat) && sheetLat !== 0) {
+                    document.getElementById('lat-input').value = sheetLat.toFixed(4);
+                }
+                if (!isNaN(sheetLng) && sheetLng !== 0) {
+                    document.getElementById('lng-input').value = sheetLng.toFixed(4);
+                }
+
+                // Update internal soil state
+                soilState.n = Math.round(valN);
+                soilState.p = Math.round(valP);
+                soilState.k = Math.round(valK);
+                soilState.ph = Math.max(3.0, Math.min(10.0, parseFloat(valPH.toFixed(1))));
+                soilState.moisture = Math.round(valMoisture);
+                soilState.temp = Math.round(valTemp);
+                soilState.ec = Math.round(valEC);
+
+                const now = new Date();
+                syncTime.innerText = `อัปเดต: ${now.toLocaleTimeString('th-TH')}`;
+                
+                updateSensorDisplay();
+                showNotification("ดึงข้อมูลจาก Google Sheet สำเร็จ!", "fa-file-csv");
+                return true;
+
+            } catch (err) {
+                console.error("Google Sheet error:", err);
+                apiStatus.innerHTML = '<span class="text-rose-500 font-medium"><i class="fa-solid fa-triangle-exclamation"></i> ไม่สามารถดึง Google Sheet ได้ (โปรดตรวจสอบการแชร์แบบสาธารณะ)</span>';
+                showNotification("ดึง Google Sheet ไม่สำเร็จ (ใช้ค่าล่าสุด)", "fa-triangle-exclamation", true);
+                updateSensorDisplay();
+                return false;
+            }
+        }
+
+        // --- Integrated Master Sync: Google Sheet -> NASA POWER & Open-Meteo -> Crop Recommendation ---
+        async function syncAllData() {
+            // 1. Fetch Google Sheet Data
+            await fetchGoogleSheetData();
+            
+            // 2. Fetch NASA POWER & Open-Meteo external weather data
+            await fetchExternalData();
+        }
 
         // --- Custom Toast Alert Notification ---
         function showNotification(message, iconClass = 'fa-circle-info', isError = false) {
@@ -405,7 +511,7 @@
             const lng = document.getElementById('lng-input').value;
             const apiStatus = document.getElementById('api-status');
 
-            apiStatus.innerHTML = '<span class="text-teal-600 animate-pulse font-medium"><i class="fa-solid fa-spinner animate-spin"></i> กำลังเชื่อมต่อดาวเทียม...</span>';
+            apiStatus.innerHTML = '<span class="text-teal-600 animate-pulse font-medium"><i class="fa-solid fa-spinner animate-spin"></i> กำลังดึงข้อมูลดาวเทียม NASA & Open-Meteo...</span>';
 
             try {
                 // 1. Fetch Open-Meteo for Weather and Temp
@@ -434,29 +540,14 @@
                 document.getElementById('external-temp').innerText = `${currentTemp} °C`;
                 document.getElementById('external-humidity').innerText = `${currentHumidity} %`;
 
-                apiStatus.innerHTML = '<span class="text-emerald-600 font-medium"><i class="fa-solid fa-circle-check"></i> ดึงข้อมูลสำเร็จ</span>';
-                showNotification("เชื่อมโยงข้อมูลดาวเทียมสำเร็จ", "fa-satellite");
+                apiStatus.innerHTML = '<span class="text-emerald-600 font-medium"><i class="fa-solid fa-circle-check"></i> ดึงข้อมูล Google Sheet + NASA + Open-Meteo ครบถ้วน</span>';
 
                 recalculateAndDisplay();
             } catch (err) {
                 console.error("API error:", err);
                 apiStatus.innerHTML = '<span class="text-red-500 font-medium"><i class="fa-solid fa-circle-exclamation"></i> ล้มเหลว (ใช้ค่าสถิติมาตรฐาน)</span>';
-                showNotification("ไม่สามารถดึงข้อมูล API ได้ (ใช้ค่ามาตรฐาน)", "fa-triangle-exclamation", true);
+                showNotification("ไม่สามารถดึงข้อมูลภูมิอากาศได้ (ใช้ค่ามาตรฐาน)", "fa-triangle-exclamation", true);
             }
-        }
-
-        // --- Helper: Simulate Sensor Readings (Modbus Simulation) ---
-        function setRandomSoilValues() {
-            soilState.n = Math.floor(Math.random() * 100) + 20;
-            soilState.p = Math.floor(Math.random() * 60) + 10;
-            soilState.k = Math.floor(Math.random() * 150) + 40;
-            soilState.ph = parseFloat((Math.random() * 3 + 4.5).toFixed(1));
-            soilState.moisture = Math.floor(Math.random() * 60) + 20;
-            soilState.temp = Math.floor(Math.random() * 15) + 20;
-            soilState.ec = Math.floor(Math.random() * 1000) + 200;
-
-            updateSensorDisplay();
-            showNotification("อัปเดตข้อมูลอ่านค่าดินล่าสุดสำเร็จ", "fa-arrows-rotate");
         }
 
         // --- Core Algorithm: Match & Compare ---
